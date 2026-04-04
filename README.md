@@ -44,12 +44,13 @@ npm start
 
 ```
 SIVICO23_FASE2_BACKEND/
-├── server.js              # Servidor principal
-├── schema.sql             # Esquema de base de datos
-├── package.json           # Dependencias
-├── .env.example           # Plantilla de configuración
-├── README.md              # Esta documentación
-└── logs/                  # Logs del servidor (auto-generado)
+├── server.js              # Servidor principal (Express)
+├── database.sql           # Esquema completo de la base de datos (PostgreSQL)
+├── package.json           # Lista de dependencias del proyecto (npm)
+├── package-lock.json      # ¡Importante! Fija las versiones exactas de las dependencias para evitar que el servidor falle si una librería se actualiza en el futuro.
+├── .env.example           # Plantilla de variables de entorno
+├── README.md              # Documentación técnica
+└── logs/                  # Logs estandarizados
 ```
 
 ---
@@ -69,7 +70,7 @@ Registrar nuevo usuario
   "apellido": "Pérez",
   "email": "juan@example.com",
   "password": "contraseña123",
-  "rol": "promotor"
+  "rol": "vocero"
 }
 ```
 
@@ -82,7 +83,7 @@ Registrar nuevo usuario
     "cedula": "V-12345678",
     "nombre": "Juan",
     "apellido": "Pérez",
-    "rol": "promotor"
+    "rol": "vocero"
   }
 }
 ```
@@ -108,7 +109,7 @@ Iniciar sesión
     "cedula": "V-12345678",
     "nombre": "Juan",
     "apellido": "Pérez",
-    "rol": "promotor"
+    "rol": "vocero"
   }
 }
 ```
@@ -309,10 +310,9 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 ### **Roles de Usuario**
 
-- **admin:** Acceso completo
-- **medico:** Puede ver todos los registros
-- **promotor:** Solo ve sus propios registros
-- **ciudadano:** Solo ve su historial personal
+- **admin:** Acceso completo al sistema, fusiones, catálogos y métricas.
+- **medico:** Visualización global de historiales clínicos y empadronamiento.
+- **vocero:** (Vocero Comunal) Empadronamiento y carga de encuestas de salud enfocadas en su sector asignado.
 
 ### **Rate Limiting**
 
@@ -323,18 +323,32 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 ## 🗄️ BASE DE DATOS
 
-### **Tablas Principales:**
+### **Estructura Dinámica (17 Tablas):**
 
-1. **usuarios** - Credenciales y roles
-2. **pacientes** - Información demográfica
-3. **registros** - Registro médico principal
-4. **tratamientos** - Patologías diagnosticadas
-5. **medicamentos** - Medicamentos prescritos
-6. **alertas_emergencia** - Emergencias SOS
+El sistema cuenta con un esquema relacional profundo distribuido en 17 tablas activas:
 
-### **Relaciones:**
+1. **roles** - Roles del sistema
+2. **categorias_cie10** - Clasificación principal CIE-10
+3. **sectores** - Polígonos y sectores del Eje Comunal
+4. **patologias_cie10** - Diccionario médico internacional
+5. **usuarios** - Credenciales (Admin, Médico, Vocero)
+6. **pacientes** - Datos demográficos e identidad
+7. **registros** - Cabecera de atención médica (Fecha, Médico)
+8. **tratamientos** - Diagnóstico cruzado entre Paciente y Patología
+9. **medicamentos** - Prescripciones detalladas asociadas al tratamiento
+10. **alertas_emergencia** - Sistema SOS Georreferenciado
+11. **cat_discapacidades** - Catálogo oficial CONAPDIS
+12. **paciente_discapacidades** - Relación Paciente-Discapacidad
+13. **cat_vacunas_mpps** - Esquema PAI Nacional
+14. **registro_vacunacion** - Dosis aplicadas (Módulo Pediátrico)
+15. **jornadas_salud** - Planificación de despliegues comunitarios
+16. **notificaciones_usuarios** - Sistema de buzón de alertas
+17. **auditoria_pacientes** - Historial inmutable de cambios críticos
+
+### **Relaciones Principales:**
 
 ```
+sectores (1) ──< (N) pacientes
 usuarios (1) ──< (N) registros
 pacientes (1) ──< (N) registros
 registros (1) ──< (N) tratamientos
@@ -483,15 +497,15 @@ PORT=3001
 
 ## 📄 LICENCIA
 
-MIT License - Proyecto Sociotecnológico TSU Informática
+Proyecto Sociotecnológico - PNF Informática
 
 ---
 
 ## 👥 AUTORES
 
-- Proyecto: SIVICO23
-- Comunidad: 23 de Enero, Caracas
-- Institución: IUTEPAL / UPTAEB
+- Proyecto: SIVICO23 (Sistema de Vigilancia y Control Comunitario)
+- Comunidad: Eje Territorial Comunal
+- Institución: Universidad Politécnica Territorial "Andrés Eloy Blanco" (UPTAEB)
 - Año: 2026
 
 ---

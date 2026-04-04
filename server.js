@@ -14,6 +14,7 @@ const jwt = require('jsonwebtoken');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const crypto = require('crypto');
+const Joi = require('joi');
 
 // ——— SECTORES VÁLIDOS (Estructura de apoyo) ———
 const SECTORES_VALIDOS = [
@@ -22,6 +23,24 @@ const SECTORES_VALIDOS = [
   'El Mirador', 'Cristo Rey', 'Santa Rosa', 'La Planicie', 'La Silsa',
   'El Samán'
 ];
+
+// ——— GEORREFERENCIACIÓN: Coordenadas por Sector (Fase 22) ———
+const SECTORES_COORDS = {
+  'Observatorio':   { lat: 10.5015, lng: -66.9390 },
+  'La Piedrita':    { lat: 10.5041, lng: -66.9314 },
+  'Sierra Maestra': { lat: 10.5045, lng: -66.9361 },
+  'La Cañada':      { lat: 10.5078, lng: -66.9320 },
+  'Zona Central':   { lat: 10.5040, lng: -66.9285 },
+  'Monte Piedad':   { lat: 10.5073, lng: -66.9257 },
+  'Zona E':         { lat: 10.5052, lng: -66.9310 },
+  'Zona F':         { lat: 10.5085, lng: -66.9355 },
+  'El Mirador':     { lat: 10.5060, lng: -66.9400 },
+  'Cristo Rey':     { lat: 10.5030, lng: -66.9380 },
+  'Santa Rosa':     { lat: 10.5090, lng: -66.9300 },
+  'La Planicie':    { lat: 10.5000, lng: -66.9350 },
+  'La Silsa':       { lat: 10.5120, lng: -66.9380 },
+  'El Samán':       { lat: 10.5050, lng: -66.9270 }
+};
 
 // ——— HELPER: Calcular edad a partir de fecha_nacimiento ———
 const edadDesdeFechaNacimiento = (fechaNac) => {
@@ -46,18 +65,73 @@ const fechaNacimientoDesdeEdad = (edad) => {
 // ——— HELPER: Normalizar cédula (quitar letras, puntos, guiones, espacios) ———
 const normalizarCedula = (ced) => {
   if (!ced) return null;
-  // Convertir a string y quitar todo lo que no sea número
-  return String(ced).replace(/[^0-9]/g, '');
+  // Convertir a string, quitar todo lo que no sea número y quitar espacios laterales
+  return String(ced).replace(/[^0-9]/g, '').trim();
+};
+
+const normalizarEmail = (email) => {
+  if (!email) return null;
+  return String(email).trim().toLowerCase();
+};
+
+const normalizarNombre = (str) => {
+  if (!str) return null;
+  // Quitar signos raros, dejar solo letras y espacios, y capitalizar cada palabra
+  return String(str)
+    .trim()
+    .replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '')
+    .split(/\s+/)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
 };
 
 // ——— HELPER: Adaptar fila de paciente para JSON (Patrón Adaptador) ———
 const adaptarPaciente = (row) => {
+  if (!row) return null;
   const { activo, ...rest } = row;
+  
+  // Normalizar fecha_nacimiento de forma segura (Date o string)
+  let feNacISO = null;
+  if (row.fecha_nacimiento) {
+    try {
+      const d = new Date(row.fecha_nacimiento);
+      if (!isNaN(d.getTime())) {
+        feNacISO = d.toISOString().split('T')[0];
+      } else {
+        // Si es un string YYYY-MM-DD ya, lo usamos
+        feNacISO = String(row.fecha_nacimiento).split(' ')[0].split('T')[0];
+      }
+    } catch (e) { feNacISO = null; }
+  }
+
   return {
     ...rest,
-    edad: edadDesdeFechaNacimiento(row.fecha_nacimiento),
-    fecha_nacimiento: row.fecha_nacimiento ? row.fecha_nacimiento.toISOString().split('T')[0] : null,
+    edad: rest.edad || edadDesdeFechaNacimiento(row.fecha_nacimiento),
+    fecha_nacimiento: feNacISO,
+    sector_nombre: row.sector_nombre || row.sector || null
   };
+};
+
+// ——— HELPER: Sincronizar Perfil de Discapacidades (Centralizado) ———
+const sincronizarDiscapacidades = async (client, paciente_id, discapacidades) => {
+  if (!Array.isArray(discapacidades)) return;
+
+  // 1. Purgar perfiles anteriores (Estrategia Re-sync)
+  await client.query('DELETE FROM paciente_discapacidades WHERE paciente_id = $1', [paciente_id]);
+
+  for (const d of discapacidades) {
+    // 2. Validación de Integridad (Business Logic)
+    if (d.posee_certificado_conapdis && (!d.numero_certificado || d.numero_certificado.trim() === '')) {
+      throw new Error(`El diagnóstico ${d.discapacidad_id} requiere número de certificado CONAPDIS.`);
+    }
+
+    // 3. Inserción Atómica
+    await client.query(
+      `INSERT INTO paciente_discapacidades (paciente_id, discapacidad_id, posee_certificado_conapdis, numero_certificado, observaciones)
+       VALUES ($1, $2, $3, $4, $5)`,
+      [paciente_id, d.discapacidad_id, d.posee_certificado_conapdis || false, d.numero_certificado || null, d.observaciones || null]
+    );
+  }
 };
 
 const app = express();
@@ -83,6 +157,14 @@ const loginLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+const apiLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000, // 10 minutos
+  max: 100, // máximo 100 peticiones por IP en 10 min
+  message: { error: 'Límite de peticiones alcanzado. Por favor, espere 10 minutos.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // ——— CONEXIÓN POSTGRESQL ———
 const connectionString = process.env.DATABASE_URL;
 const pool = new Pool(
@@ -97,66 +179,252 @@ const pool = new Pool(
     }
 );
 
-// Test conexión + limpieza automática de duplicados al arrancar
-pool.query('SELECT NOW()', async (err, res) => {
-  if (err) {
-    console.error('❌ Error conectando a PostgreSQL:', err);
-  } else {
+// Test conexión a PostgreSQL al arrancar y Sincronizar Catálogos
+const inicializarBaseDeDatos = async () => {
+  try {
+    const res = await pool.query('SELECT NOW()');
     console.log('✅ PostgreSQL conectado:', res.rows[0].now);
 
-    // Auto-limpiar cédulas duplicadas en la tabla pacientes
-    try {
-      // Reasignar registros médicos al paciente más antiguo
-      await pool.query(`
-        UPDATE registros r
-        SET paciente_id = (
-          SELECT MIN(p2.id) FROM pacientes p2
-          WHERE p2.cedula = (SELECT cedula FROM pacientes WHERE id = r.paciente_id)
-        )
-        WHERE r.paciente_id IN (
-          SELECT id FROM pacientes
-          WHERE cedula IN (SELECT cedula FROM pacientes GROUP BY cedula HAVING COUNT(*) > 1)
-          AND id NOT IN (SELECT MIN(id) FROM pacientes GROUP BY cedula)
-        )
-      `);
+    // Sincronización Automática de Catálogo de Vacunas (MPPS)
+    console.log('[CATÁLOGO] Sincronizando vacunas MPPS...');
+    const queryVacunas = `
+      INSERT INTO cat_vacunas_mpps (nombre, edad_minima_meses, dosis_totales, descripcion) VALUES
+      ('BCG', 0, 1, 'Contra Tuberculosis. Dosis única (Recién Nacido)'),
+      ('Hepatitis B RN', 0, 1, 'Dosis RN (primeras 12 horas de vida)'),
+      ('Hepatitis B Adulto', 216, 3, 'Esquema de 3 dosis para adultos no vacunados'),
+      ('Pentavalente', 2, 5, 'Difteria, Tétanos, Tosferina, Hepatitis B, H. Influenzae b (2, 4, 6 meses + refuerzos)'),
+      ('Polio (IPV)', 2, 2, 'Vacuna inactivada contra Poliomielitis. Inyectada (2, 4 meses)'),
+      ('Polio (OPV)', 6, 3, 'Vacuna oral contra Poliomielitis. (6 meses + 2 refuerzos)'),
+      ('Rotavirus', 2, 2, 'Primera dosis a los 2 meses. Máximo hasta los 6 meses de edad.'),
+      ('Neumococo Conjugada', 2, 3, 'Esquema de 2 y 4 meses + refuerzo entre 12 y 15 meses.'),
+      ('Neumococo Polisacárida', 24, 1, 'Refuerzo para poblaciones de riesgo a partir de los 2 años.'),
+      ('Influenza Estacional', 6, 2, 'Dosis inicial a los 6 meses, refuerzo al mes. Luego anual.'),
+      ('Fiebre Amarilla', 12, 1, 'Protección aplicable a partir de los 12 meses de vida.'),
+      ('SRP (Trivalente Viral)', 12, 2, 'Sarampión, Rubéola y Parotiditis. (12 meses + refuerzo 5 años)'),
+      ('SR (Doble Viral)', 120, 1, 'Sarampión y Rubéola. Refuerzo en edad escolar o campañas.'),
+      ('Toxoide Tetánico Diftérico', 120, 5, 'Esquema de 5 dosis para adolescentes y adultos.'),
+      ('Meningocócica BC', 3, 2, 'Protección contra Meningitis. Esquema de 2 dosis.'),
+      ('Rabia Humana', 0, 5, 'Esquema post-exposición de 5 dosis.'),
+      ('Varicela', 12, 2, 'Protección contra Varicela. Esquema de 2 dosis.'),
+      ('Hepatitis A', 12, 2, 'Protección contra Hepatitis A. Esquema de 2 dosis.'),
+      ('COVID-19', 36, 3, 'Esquema inicial de 2 dosis + refuerzo.')
+      ON CONFLICT (nombre) DO NOTHING;
+    `;
+    await pool.query(queryVacunas);
+    console.log('✅ Catálogo de vacunas sincronizado.');
 
-      // Eliminar los duplicados más recientes
-      const dupDel = await pool.query(`
-        DELETE FROM pacientes
-        WHERE id NOT IN (SELECT MIN(id) FROM pacientes GROUP BY cedula)
-          AND cedula IN (SELECT cedula FROM pacientes GROUP BY cedula HAVING COUNT(*) > 1)
-        RETURNING cedula
-      `);
+  } catch (err) {
+    console.error('❌ Error inicializando base de datos:', err.message);
+  }
+};
+inicializarBaseDeDatos();
 
-      if (dupDel.rowCount > 0) {
-        console.log(`⚠️  Auto-deduplicación: eliminados ${dupDel.rowCount} pacientes duplicados:`,
-          dupDel.rows.map(r => r.cedula).join(', '));
-      } else {
-        console.log('✅ Sin cédulas duplicadas en pacientes.');
+// ——— HELPER: Manejo de Errores Estandarizado (Fase 15) ———
+const handleError = (res, error, customMsg = 'Error interno del servidor') => {
+  console.error(`[ERROR]: ${error.message}`, error.stack);
+  // En producción no enviamos el stack ni detalles técnicos sensibles
+  const isDev = process.env.NODE_ENV === 'development';
+  res.status(500).json({ 
+    error: isDev ? error.message : customMsg,
+    ...(isDev && { stack: error.stack })
+  });
+};
+
+// ——— ESQUEMAS DE VALIDACIÓN (JOI - Fase 15) ———
+const schemas = {
+  jornada: Joi.object({
+    titulo: Joi.string().min(5).max(100).required(),
+    descripcion: Joi.string().max(150).allow(''),
+    fecha: Joi.string().pattern(/^\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}$/).required(),
+    lugar: Joi.string().min(3).required(),
+    sector: Joi.string().allow('', null)
+  }),
+  paciente: Joi.object({
+    cedula: Joi.string().allow('', null),
+    nombre: Joi.string().min(2).required(),
+    apellido: Joi.string().min(2).required(),
+    edad: Joi.number().min(0).max(120).allow(null),
+    fecha_nacimiento: Joi.string().isoDate().allow(null, ''),
+    sexo: Joi.string().valid('Masculino', 'Femenino', 'Otro').default('Masculino'),
+    telefono: Joi.string().allow('', null),
+    sector: Joi.string().allow('', null),
+    direccionOrCoord: Joi.string().allow('', null),
+    direccion: Joi.string().allow('', null),
+    cedula_representante: Joi.string().allow('', null),
+    discapacidades: Joi.array().items(Joi.object()).allow(null)
+  }).unknown(true)
+};
+
+const validateBody = (schemaName) => (req, res, next) => {
+  const { error } = schemas[schemaName].validate(req.body, { abortEarly: false });
+  if (error) {
+    return res.status(400).json({ 
+      error: 'Validación fallida', 
+      detalles: error.details.map(d => d.message) 
+    });
+  }
+  next();
+};
+
+// ——— MIDDLEWARES DE VALIDACIÓN Y ROBUSTEZ (FASE 14) ———
+
+const sanitizarCredenciales = (req, res, next) => {
+  if (req.body.cedula) req.body.cedula = normalizarCedula(req.body.cedula);
+  if (req.body.email) req.body.email = normalizarEmail(req.body.email);
+  if (req.body.paciente_cedula) req.body.paciente_cedula = normalizarCedula(req.body.paciente_cedula);
+  if (req.body.nombre) req.body.nombre = normalizarNombre(req.body.nombre);
+  if (req.body.apellido) req.body.apellido = normalizarNombre(req.body.apellido);
+  next();
+};
+
+const validarCuerpoJornada = (req, res, next) => {
+  const { titulo, fecha_jornada, lugar } = req.body;
+  if (!titulo || !fecha_jornada || !lugar) {
+    return res.status(400).json({ error: 'Título, fecha y lugar son obligatorios para programar una jornada.' });
+  }
+  if (req.body.descripcion && req.body.descripcion.length > 150) {
+     return res.status(400).json({ error: 'La descripción no debe exceder los 150 caracteres.' });
+  }
+  next();
+};
+
+// ——— HELPER: Procesar Inserción de Registro Completo (Centralizado Fase 14) ———
+const insertarPacienteRegistroCompleto = async (client, usuario_id, data) => {
+  const { paciente, tratamientos, observaciones, fecha, codigo } = data;
+  
+  // 1. Procesar Paciente (Normalización y Upsert)
+  let cedula = normalizarCedula(data.paciente_cedula || paciente?.cedula);
+  if (cedula === '') cedula = null;
+
+  let fechaNac = paciente?.fecha_nacimiento || paciente?.fechaNacimiento;
+  if (fechaNac && String(fechaNac).includes('/')) {
+    fechaNac = fechaNac.split('/').reverse().join('-');
+  }
+  if (!fechaNac) {
+    // Si no hay fecha, intentamos deducirla de la edad, si no, usamos la fecha actual (infante recién nacido)
+    // para evitar el salto a '2000-01-01' que causa confusiones (edad 26).
+    fechaNac = paciente?.edad ? fechaNacimientoDesdeEdad(paciente.edad) : new Date().toISOString().split('T')[0];
+  }
+
+  // Obtener sector_id
+  let sector_id = null;
+  if (paciente?.sector) {
+    const resS = await client.query('SELECT id FROM sectores WHERE nombre = $1', [paciente.sector]);
+    sector_id = resS.rows[0]?.id || null;
+  }
+
+  let cedulaRep = normalizarCedula(paciente?.cedula_representante || data.cedula_representante);
+  if (cedulaRep === '') cedulaRep = null;
+
+  let paciente_id;
+  if (cedula) {
+    const pUpsert = await client.query(
+      `INSERT INTO pacientes(cedula, nombre, apellido, fecha_nacimiento, sexo, telefono, sector_id, direccion, cedula_representante, requiere_vigilancia_constante)
+       VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+       ON CONFLICT(cedula) WHERE cedula IS NOT NULL DO UPDATE SET
+         nombre = EXCLUDED.nombre, apellido = EXCLUDED.apellido, 
+         sector_id = COALESCE(EXCLUDED.sector_id, pacientes.sector_id),
+         cedula_representante = COALESCE(EXCLUDED.cedula_representante, pacientes.cedula_representante),
+         requiere_vigilancia_constante = EXCLUDED.requiere_vigilancia_constante,
+         updated_at = CURRENT_TIMESTAMP
+       RETURNING id`,
+      [
+        cedula, 
+        paciente?.nombre || 'S/N', 
+        paciente?.apellido || 'S/A', 
+        fechaNac, 
+        paciente?.sexo || 'Masculino', 
+        paciente?.telefono || null, 
+        sector_id, 
+        paciente?.direccion || null, 
+        cedulaRep,
+        paciente?.requiere_vigilancia_constante || false
+      ]
+    );
+    paciente_id = pUpsert.rows[0].id;
+  } else {
+    const pFind = await client.query(
+      `SELECT id, cedula_representante FROM pacientes 
+       WHERE TRIM(nombre) ILIKE TRIM($1) 
+         AND TRIM(apellido) ILIKE TRIM($2) 
+         AND (fecha_nacimiento = $3 OR (EXTRACT(YEAR FROM fecha_nacimiento) = EXTRACT(YEAR FROM $3::date) AND EXTRACT(MONTH FROM fecha_nacimiento) = EXTRACT(MONTH FROM $3::date)))
+         AND (cedula IS NULL OR cedula = '-')
+       ORDER BY created_at ASC LIMIT 1`,
+      [paciente?.nombre, paciente?.apellido, fechaNac]
+    );
+    if (pFind.rows.length > 0) {
+      const infante = pFind.rows[0];
+      if (infante.cedula_representante && cedulaRep && infante.cedula_representante !== cedulaRep) {
+         throw new Error(`El menor ya se encuentra registrado en el sistema bajo el representante ${infante.cedula_representante}.`);
       }
-      // 3. Normalizar cédulas en la tabla usuarios
-      const userNorm = await pool.query(`
-        UPDATE usuarios
-        SET cedula = regexp_replace(cedula, '[^0-9]', '', 'g')
-        WHERE cedula ~ '[^0-9]'
-        RETURNING id, cedula
-      `);
-
-      if (userNorm.rowCount > 0) {
-        console.log(`⚠️  Normalización Usuarios: corregidas ${userNorm.rowCount} cédulas de usuario.`);
-      }
-
-      // Eliminar usuarios duplicados si los hubiere después de normalizar (conservar más antiguo)
-      await pool.query(`
-        DELETE FROM usuarios
-        WHERE id NOT IN (SELECT MIN(id) FROM usuarios GROUP BY cedula)
-          AND cedula IN (SELECT cedula FROM usuarios GROUP BY cedula HAVING COUNT(*) > 1)
-      `);
-    } catch (startupErr) {
-      console.warn('⚠️  Error en procesos de limpieza inicial (no crítico):', startupErr.message);
+      paciente_id = infante.id;
+      // Actualizar vigilancia constante incluso si el paciente ya existe sin cédula
+      await client.query('UPDATE pacientes SET requiere_vigilancia_constante = $1 WHERE id = $2', [paciente?.requiere_vigilancia_constante || false, paciente_id]);
+    } else {
+      const pIns = await client.query(
+        `INSERT INTO pacientes(nombre, apellido, fecha_nacimiento, sexo, telefono, sector_id, direccion, cedula_representante, requiere_vigilancia_constante)
+         VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`,
+        [
+          paciente?.nombre || 'S/N', 
+          paciente?.apellido || 'S/A', 
+          fechaNac, 
+          paciente?.sexo || 'Masculino', 
+          paciente?.telefono || null, 
+          sector_id, 
+          paciente?.direccion || null, 
+          cedulaRep,
+          paciente?.requiere_vigilancia_constante || false
+        ]
+      );
+      paciente_id = pIns.rows[0].id;
     }
   }
-});
+
+  // 1.5 Sincronizar Discapacidades (Fase 21)
+  if (paciente?.discapacidades) {
+    await sincronizarDiscapacidades(client, paciente_id, paciente.discapacidades);
+  }
+
+  // 2. Registro Principal
+  const codigoFinal = codigo || `SIV-${new Date().getFullYear()}-${crypto.randomUUID().split('-')[0].toUpperCase()}`;
+  const regRes = await client.query(
+    `INSERT INTO registros(codigo, paciente_id, usuario_id, observaciones, fecha) VALUES($1, $2, $3, $4, $5) RETURNING id`,
+    [codigoFinal, paciente_id, usuario_id, observaciones || null, fecha || new Date()]
+  );
+  const registro_id = regRes.rows[0].id;
+
+  // 3. Tratamientos y Medicamentos
+  for (const t of (tratamientos || [])) {
+    let cie10 = t.patologia?.cie10 || t.cie10 || (typeof t.patologia === 'string' ? t.patologia : 'Z00.0');
+    if (cie10.length > 10) cie10 = 'Z00.0';
+
+    const resP = await client.query('SELECT id FROM patologias_cie10 WHERE codigo = $1', [cie10]);
+    const patologia_id = resP.rows[0]?.id || 4;
+
+    const tIns = await client.query(
+      `INSERT INTO tratamientos(registro_id, patologia_id, descripcion) VALUES($1, $2, $3) RETURNING id`,
+      [registro_id, patologia_id, t.patologia?.nombre || (typeof t.patologia === 'string' ? t.patologia : 'Consulta')]
+    );
+    const t_id = tIns.rows[0].id;
+
+    for (const m of (t.medicamentos || [])) {
+      const pres = m.presentacion_seleccionada ? `${m.presentacion_seleccionada.forma || ''} ${m.presentacion_seleccionada.mg || ''}`.trim() : (m.presentacion || null);
+      const medNombreFinal = m.nombre && m.nombre !== 'Medicamento' ? m.nombre : (t.patologia?.nombre ? `Med. para ${t.patologia.nombre}` : 'Medicamento no especificado');
+      
+      // Asegurar booleanos para evitar "invalid input syntax" en PostgreSQL
+      const esDisponible = m.disponibilidad === true || m.disponibilidad === 'true' || m.disponibilidad === 1;
+      const esOficial = m.es_oficial === true || m.es_oficial === 'true' || m.es_oficial === 1;
+
+      await client.query(
+        `INSERT INTO medicamentos(tratamiento_id, nombre, presentacion, dosis, via, disponibilidad, es_oficial) 
+         VALUES($1, $2, $3, $4, $5, $6, $7)`,
+        [t_id, medNombreFinal, pres, m.dosis_seleccionada?.valor || m.dosis || null, m.via || null, esDisponible, esOficial]
+      );
+    }
+  }
+  
+  return { id: registro_id, codigo: codigoFinal };
+};
 
 // ——— MIDDLEWARE DE AUTENTICACIÓN ———
 const authenticateToken = (req, res, next) => {
@@ -202,12 +470,17 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', time: new Date().toISOString() });
 });
 
+// GET /api/health — Endpoint público de salud para Railway/Monitoreo
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString(), service: 'SIVICO23 Backend' });
+});
+
 // ============================================================
 // RUTAS DE AUTENTICACIÓN
 // ============================================================
 
 // POST /api/auth/register — Registrar nuevo usuario
-app.post('/api/auth/register', authenticateToken, authorizeRoles('admin'), async (req, res) => {
+app.post('/api/auth/register', apiLimiter, authenticateToken, authorizeRoles('admin'), sanitizarCredenciales, async (req, res) => {
   try {
     let { cedula, nombre, apellido, email, password, rol } = req.body;
     cedula = normalizarCedula(cedula);
@@ -249,13 +522,12 @@ app.post('/api/auth/register', authenticateToken, authorizeRoles('admin'), async
       usuario: { ...result.rows[0], rol: rol || 'vocero' }
     });
   } catch (error) {
-    console.error('Error en registro:', error);
-    res.status(500).json({ error: 'Error interno del servidor' });
+    handleError(res, error, 'Error en el registro de usuario');
   }
 });
 
 // POST /api/auth/login — Iniciar sesión (con rate limiting anti brute-force)
-app.post('/api/auth/login', loginLimiter, async (req, res) => {
+app.post('/api/auth/login', loginLimiter, sanitizarCredenciales, async (req, res) => {
   try {
     let { cedula, password } = req.body;
     if (!cedula || !password) {
@@ -314,8 +586,7 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Error en login:', error);
-    res.status(500).json({ error: 'Error interno del servidor' });
+    handleError(res, error, 'Error en el inicio de sesión');
   }
 });
 
@@ -344,7 +615,7 @@ app.get('/api/auth/me', authenticateToken, async (req, res) => {
 // RUTAS DE CATÁLOGOS (3FN)
 // ============================================================
 
-app.get('/api/catalogos/roles', async (req, res) => {
+app.get('/api/catalogos/roles', authenticateToken, async (req, res) => {
   try {
     const result = await pool.query('SELECT id, nombre, descripcion FROM roles ORDER BY id ASC');
     res.json(result.rows);
@@ -382,7 +653,9 @@ app.get('/api/catalogos/sectores', async (req, res) => {
 // GET /api/pacientes — Listar todos los pacientes (solo activos)
 app.get('/api/pacientes', authenticateToken, authorizeRoles('admin', 'medico', 'vocero'), async (req, res) => {
   try {
-    const { limit = 50, offset = 0, busqueda } = req.query;
+    // Soporte para parámetros 'q' (standard SearchScreen) o 'busqueda'
+    const { limit = 50, offset = 0, busqueda, q } = req.query;
+    const currentSearch = busqueda || q;
 
     let query = `
       SELECT p.*, s.nombre AS sector_nombre,
@@ -397,10 +670,14 @@ app.get('/api/pacientes', authenticateToken, authorizeRoles('admin', 'medico', '
       WHERE p.activo = true`;
     const params = [];
 
-    if (busqueda) {
+    if (currentSearch) {
       const idx = params.length;
-      query += ` AND (p.cedula ILIKE $${idx + 1} OR p.nombre ILIKE $${idx + 2} OR p.apellido ILIKE $${idx + 3})`;
-      params.push(`%${busqueda}%`, `%${busqueda}%`, `%${busqueda}%`);
+      query += ` AND (p.cedula ILIKE $${idx + 1} 
+                   OR p.nombre ILIKE $${idx + 2} 
+                   OR p.apellido ILIKE $${idx + 3} 
+                   OR CONCAT(p.nombre, ' ', COALESCE(p.apellido, '')) ILIKE $${idx + 4}
+                   OR p.cedula_representante ILIKE $${idx + 5})`;
+      params.push(`%${currentSearch}%`, `%${currentSearch}%`, `%${currentSearch}%`, `%${currentSearch}%`, `%${currentSearch}%`);
     }
 
     query += ` ORDER BY p.created_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
@@ -416,8 +693,7 @@ app.get('/api/pacientes', authenticateToken, authorizeRoles('admin', 'medico', '
       total: result.rowCount
     });
   } catch (error) {
-    console.error('Error obteniendo pacientes:', error);
-    res.status(500).json({ error: 'Error interno del servidor' });
+    handleError(res, error, 'Error al obtener la lista de pacientes');
   }
 });
 
@@ -445,7 +721,7 @@ app.get('/api/pacientes/:cedula/historial', authenticateToken, authorizeRoles('a
               ) AS tiene_cronica
        FROM pacientes p
        LEFT JOIN sectores s ON p.sector_id = s.id
-       WHERE p.cedula = $1 AND p.activo = true`,
+       WHERE (p.cedula = $1 OR p.id::text = $1) AND p.activo = true`,
       [cedula]
     );
 
@@ -454,53 +730,53 @@ app.get('/api/pacientes/:cedula/historial', authenticateToken, authorizeRoles('a
     }
     const paciente = resPaciente.rows[0];
 
-    // Obtener todos los registros del paciente
-    const resRegistros = await pool.query(
-      `SELECT r.id, r.codigo, r.fecha, r.observaciones, u.nombre as vocero_nombre 
+    // Obtener historia médica completa optimizada (Single Query - No N+1)
+    const resHistoria = await pool.query(
+      `SELECT 
+          r.id, r.codigo, r.fecha, r.observaciones, u.nombre as vocero_nombre,
+          COALESCE((
+              SELECT json_agg(json_build_object(
+                  'id', t.id,
+                  'categoria', c.nombre,
+                  'patologia', pc.nombre,
+                  'cie10', pc.codigo,
+                  'medicamentos', COALESCE((
+                      SELECT json_agg(json_build_object(
+                          'nombre', m.nombre,
+                          'presentacion', m.presentacion,
+                          'dosis', m.dosis,
+                          'via', m.via,
+                          'disponibilidad', m.disponibilidad
+                      ))
+                      FROM medicamentos m
+                      WHERE m.tratamiento_id = t.id
+                  ), '[]'::json)
+              ))
+              FROM tratamientos t
+              JOIN patologias_cie10 pc ON t.patologia_id = pc.id
+              JOIN categorias_cie10 c ON pc.categoria_id = c.id
+              WHERE t.registro_id = r.id
+          ), '[]'::json) as tratamientos
        FROM registros r 
        JOIN usuarios u ON r.usuario_id = u.id 
        WHERE r.paciente_id = $1 
        ORDER BY r.fecha DESC`,
-      [paciente.id]
+      [resPaciente.rows[0].id]
     );
 
-    const consultas = [];
-
-    // Para cada registro, cargar tratamientos y medicamentos
-    for (const reg of resRegistros.rows) {
-      const resTrat = await pool.query(
-        `SELECT t.id, c.nombre AS categoria, pc.nombre AS patologia, pc.codigo AS cie10 
-         FROM tratamientos t 
-         JOIN patologias_cie10 pc ON t.patologia_id = pc.id
-         JOIN categorias_cie10 c ON pc.categoria_id = c.id
-         WHERE t.registro_id = $1`,
-        [reg.id]
-      );
-
-      const tratamientos = resTrat.rows;
-      for (const trat of tratamientos) {
-        const resMeds = await pool.query(
-          `SELECT nombre, presentacion, dosis, via, disponibilidad 
-           FROM medicamentos WHERE tratamiento_id = $1`,
-          [trat.id]
-        );
-        trat.medicamentos = resMeds.rows;
-      }
-
-      consultas.push({
-        id: reg.id,
-        codigo: reg.codigo,
-        fecha: reg.fecha,
-        observaciones: reg.observaciones,
-        vocero: reg.vocero_nombre,
-        tratamientos
-      });
-    }
-
-    res.json({ paciente, consultas });
+    res.json({ 
+      paciente: resPaciente.rows[0], 
+      consultas: resHistoria.rows.map(h => ({
+        id: h.id,
+        codigo: h.codigo,
+        fecha: h.fecha,
+        observaciones: h.observaciones,
+        vocero: h.vocero_nombre,
+        tratamientos: h.tratamientos
+      }))
+    });
   } catch (error) {
-    console.error('Error obteniendo historial por cédula:', error);
-    res.status(500).json({ error: 'Error interno del servidor' });
+    handleError(res, error, 'Error al obtener el historial médico del paciente');
   }
 });
 
@@ -519,7 +795,7 @@ app.get('/api/pacientes/:cedula', authenticateToken, authorizeRoles('admin', 'me
        ) AS tiene_cronica
        FROM pacientes p 
        LEFT JOIN sectores s ON p.sector_id = s.id
-       WHERE p.cedula = $1 AND p.activo = true`,
+       WHERE (p.cedula = $1 OR p.id::text = $1) AND p.activo = true`,
       [cedula]
     );
 
@@ -527,7 +803,19 @@ app.get('/api/pacientes/:cedula', authenticateToken, authorizeRoles('admin', 'me
       return res.status(404).json({ error: 'Paciente no encontrado' });
     }
 
-    res.json(adaptarPaciente(result.rows[0]));
+    const paciente = result.rows[0];
+
+    // Obtener perfil de discapacidades (Fase 2)
+    const resc = await pool.query(
+      `SELECT pd.discapacidad_id, cd.nombre as discapacidad_nombre, pd.posee_certificado_conapdis, pd.numero_certificado, pd.observaciones
+       FROM paciente_discapacidades pd
+       JOIN cat_discapacidades cd ON pd.discapacidad_id = cd.id
+       WHERE pd.paciente_id = $1`,
+      [paciente.id]
+    );
+    paciente.discapacidades = resc.rows;
+
+    res.json(adaptarPaciente(paciente));
   } catch (error) {
     console.error('Error buscando paciente:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
@@ -535,33 +823,33 @@ app.get('/api/pacientes/:cedula', authenticateToken, authorizeRoles('admin', 'me
 });
 
 // POST /api/pacientes — Crear o actualizar paciente manualmente
-app.post('/api/pacientes', authenticateToken, authorizeRoles('admin', 'medico', 'vocero'), async (req, res) => {
+app.post('/api/pacientes', apiLimiter, authenticateToken, authorizeRoles('admin', 'medico', 'vocero'), validateBody('paciente'), sanitizarCredenciales, async (req, res) => {
+  const client = await pool.connect();
   try {
-    let { cedula, nombre, apellido, edad, fecha_nacimiento, sexo, telefono, sector, direccionOrCoord } = req.body;
+    await client.query('BEGIN');
+    let { cedula, nombre, apellido, edad, fecha_nacimiento, sexo, telefono, sector, direccionOrCoord, discapacidades, cedula_representante } = req.body;
     const direccion = direccionOrCoord;
 
     cedula = normalizarCedula(cedula);
+    const cedulaRep = normalizarCedula(cedula_representante);
 
     if (!nombre || !apellido || (!edad && edad !== 0 && !fecha_nacimiento)) {
-      return res.status(400).json({ error: 'Datos requeridos incompletos (nombre, apellido, edad o fecha de nacimiento)' });
+      throw new Error('Datos requeridos incompletos');
     }
 
-    // Adapter: usar fecha_nacimiento si viene, sino convertir edad → fecha_nacimiento
     const fechaNac = fecha_nacimiento || fechaNacimientoDesdeEdad(edad);
 
-    // Obtener sector_id si viene el nombre
     let sector_id = null;
     if (sector) {
-      const resS = await pool.query('SELECT id FROM sectores WHERE nombre = $1', [sector]);
+      const resS = await client.query('SELECT id FROM sectores WHERE nombre = $1', [sector]);
       sector_id = resS.rows[0]?.id || null;
     }
 
     let result;
     if (cedula) {
-      // UPSERT por cédula
-      result = await pool.query(
-        `INSERT INTO pacientes(cedula, nombre, apellido, fecha_nacimiento, sexo, telefono, sector_id, direccion)
-         VALUES($1, $2, $3, $4, $5, $6, $7, $8)
+      result = await client.query(
+        `INSERT INTO pacientes(cedula, nombre, apellido, fecha_nacimiento, sexo, telefono, sector_id, direccion, cedula_representante)
+         VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
          ON CONFLICT(cedula) WHERE cedula IS NOT NULL DO UPDATE SET
            nombre = EXCLUDED.nombre,
            apellido = EXCLUDED.apellido,
@@ -570,37 +858,43 @@ app.post('/api/pacientes', authenticateToken, authorizeRoles('admin', 'medico', 
            telefono = COALESCE(EXCLUDED.telefono, pacientes.telefono),
            sector_id = COALESCE(EXCLUDED.sector_id, pacientes.sector_id),
            direccion = COALESCE(EXCLUDED.direccion, pacientes.direccion),
+           cedula_representante = COALESCE(EXCLUDED.cedula_representante, pacientes.cedula_representante),
            activo = true,
            updated_at = CURRENT_TIMESTAMP
          RETURNING *, (xmax = 0) AS es_nuevo`,
-        [cedula, nombre, apellido, fechaNac, sexo || null, telefono || null, sector_id, direccion || null]
+        [cedula, nombre, apellido, fechaNac, sexo || null, telefono || null, sector_id, direccion || null, cedulaRep || null]
       );
     } else {
-      // Sin cédula (infantes): buscar duplicado por nombre+apellido+fecha_nacimiento
-      const existente = await pool.query(
+      const existente = await client.query(
         `SELECT * FROM pacientes WHERE nombre = $1 AND apellido = $2 AND fecha_nacimiento = $3 AND activo = true`,
         [nombre, apellido, fechaNac]
       );
 
       if (existente.rows.length > 0) {
-        // Actualizar el existente
-        result = await pool.query(
+        const infante = existente.rows[0];
+        // Validar si el infante ya tiene un representante distinto y se está intentando registrar con otro
+        if (infante.cedula_representante && cedulaRep && infante.cedula_representante !== cedulaRep) {
+           return res.status(409).json({ error: `El menor ya se encuentra registrado en el sistema bajo el representante ${infante.cedula_representante}.` });
+        }
+
+        result = await client.query(
           `UPDATE pacientes SET
             sexo = COALESCE($1, sexo),
             telefono = COALESCE($2, telefono),
             sector_id = COALESCE($3, sector_id),
             direccion = COALESCE($4, direccion),
+            cedula_representante = COALESCE($5, cedula_representante),
             updated_at = CURRENT_TIMESTAMP
-           WHERE id = $5
+           WHERE id = $6
            RETURNING *, false AS es_nuevo`,
-          [sexo || null, telefono || null, sector_id, direccion || null, existente.rows[0].id]
+          [sexo || null, telefono || null, sector_id, direccion || null, cedulaRep || null, infante.id]
         );
       } else {
-        result = await pool.query(
-          `INSERT INTO pacientes(cedula, nombre, apellido, fecha_nacimiento, sexo, telefono, sector_id, direccion)
-           VALUES(NULL, $1, $2, $3, $4, $5, $6, $7)
+        result = await client.query(
+          `INSERT INTO pacientes(cedula, nombre, apellido, fecha_nacimiento, sexo, telefono, sector_id, direccion, cedula_representante)
+           VALUES(NULL, $1, $2, $3, $4, $5, $6, $7, $8)
            RETURNING *, true AS es_nuevo`,
-          [nombre, apellido, fechaNac, sexo || null, telefono || null, sector_id, direccion || null]
+          [nombre, apellido, fechaNac, sexo || null, telefono || null, sector_id, direccion || null, cedulaRep || null]
         );
       }
     }
@@ -608,13 +902,22 @@ app.post('/api/pacientes', authenticateToken, authorizeRoles('admin', 'medico', 
     const paciente = result.rows[0];
     const esNuevo = paciente.es_nuevo;
 
+    // Sincronización de Discapacidades (Factorizado)
+    if (discapacidades) {
+      await sincronizarDiscapacidades(client, paciente.id, discapacidades);
+    }
+
+    await client.query('COMMIT');
     res.status(esNuevo ? 201 : 200).json({
       message: esNuevo ? 'Paciente creado exitosamente' : 'Paciente actualizado',
       paciente: adaptarPaciente(paciente),
     });
   } catch (error) {
+    await client.query('ROLLBACK');
     console.error('Error creando paciente:', error);
-    res.status(500).json({ error: 'Error interno del servidor' });
+    res.status(500).json({ error: error.message || 'Error interno del servidor' });
+  } finally {
+    client.release();
   }
 });
 
@@ -718,137 +1021,74 @@ app.get('/api/admin/limpiar-duplicados', authenticateToken, authorizeRoles('admi
 // RUTAS DE REGISTROS MÉDICOS
 // ============================================================
 
-// POST /api/registros — Crear nuevo registro médico
-app.post('/api/registros', authenticateToken, authorizeRoles('admin', 'medico', 'vocero'), async (req, res) => {
+// POST /api/registros — Crear nuevo registro médico (Refinamiento FASE 15)
+app.post('/api/registros', apiLimiter, authenticateToken, authorizeRoles('admin', 'medico', 'vocero'), sanitizarCredenciales, async (req, res) => {
   const client = await pool.connect();
   try {
-    await client.query('BEGIN');
-    const { paciente_cedula, paciente, tratamientos, observaciones } = req.body;
     const usuario_id = req.user.id;
+    await client.query('BEGIN');
+    
+    // PROCESAR USANDO HELPER CENTRALIZADO
+    const result = await insertarPacienteRegistroCompleto(client, usuario_id, req.body);
 
-    // 1. VALIDAR USUARIO (Session Check)
-    const checkUser = await client.query('SELECT id FROM usuarios WHERE id = $1 AND activo = true', [usuario_id]);
-    if (checkUser.rows.length === 0) {
-      await client.query('ROLLBACK');
-      return res.status(401).json({
-        error: 'Sesión expirada',
-        requireLogout: true,
-        detalle: 'Tu sesión es antigua. Por favor, CIERRA SESIÓN y vuelve a entrar.'
-      });
-    }
-
-    // 2. PROCESAR PACIENTE (UPSERT)
-    let cedula = normalizarCedula(paciente_cedula || paciente?.cedula);
-    if (cedula === '') cedula = null;
-
-    let fechaNac = paciente?.fecha_nacimiento || paciente?.fechaNacimiento;
-    if (fechaNac && String(fechaNac).includes('/')) {
-      fechaNac = fechaNac.split('/').reverse().join('-');
-    }
-    if (!fechaNac && paciente?.edad) fechaNac = fechaNacimientoDesdeEdad(paciente.edad);
-    if (!fechaNac) fechaNac = '2000-01-01';
-
-    // Obtener sector_id
-    let sector_id = null;
-    if (paciente?.sector) {
-      const resS = await client.query('SELECT id FROM sectores WHERE nombre = $1', [paciente.sector]);
-      sector_id = resS.rows[0]?.id || null;
-    }
-
-    let cedulaRep = normalizarCedula(paciente?.cedula_representante || req.body.cedula_representante);
-    if (cedulaRep === '') cedulaRep = null;
-
-    let paciente_id;
-    if (cedula) {
-      const pUpsert = await client.query(
-        `INSERT INTO pacientes(cedula, nombre, apellido, fecha_nacimiento, sexo, telefono, sector_id, direccion)
-         VALUES($1, $2, $3, $4, $5, $6, $7, $8)
-         ON CONFLICT(cedula) WHERE cedula IS NOT NULL DO UPDATE SET
-           nombre = EXCLUDED.nombre, apellido = EXCLUDED.apellido, sector_id = COALESCE(EXCLUDED.sector_id, pacientes.sector_id),
-           updated_at = CURRENT_TIMESTAMP
-         RETURNING id`,
-        [cedula, paciente?.nombre || 'S/N', paciente?.apellido || 'S/A', fechaNac, paciente?.sexo || 'Masculino', paciente?.telefono || null, sector_id, paciente?.direccion || null]
-      );
-      paciente_id = pUpsert.rows[0].id;
-    } else {
-      const pFind = await client.query(
-        'SELECT id FROM pacientes WHERE nombre=$1 AND apellido=$2 AND fecha_nacimiento=$3 AND (cedula_representante=$4 OR (cedula_representante IS NULL AND $4 IS NULL))',
-        [paciente?.nombre, paciente?.apellido, fechaNac, cedulaRep]
-      );
-      if (pFind.rows.length > 0) {
-        paciente_id = pFind.rows[0].id;
-      } else {
-        const pIns = await client.query(
-          `INSERT INTO pacientes(nombre, apellido, fecha_nacimiento, sexo, telefono, sector_id, direccion, cedula_representante)
-           VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`,
-          [paciente?.nombre || 'S/N', paciente?.apellido || 'S/A', fechaNac, paciente?.sexo || 'Masculino', paciente?.telefono || null, sector_id, paciente?.direccion || null, cedulaRep]
-        );
-        paciente_id = pIns.rows[0].id;
-      }
-    }
-
-    // 3. REGISTRO PRINCIPAL
-    const codigoFinal = `SIV-${new Date().getFullYear()}-${crypto.randomUUID().split('-')[0].toUpperCase()}`;
-    const regRes = await client.query(
-      `INSERT INTO registros(codigo, paciente_id, usuario_id, observaciones) VALUES($1, $2, $3, $4) RETURNING id`,
-      [codigoFinal, paciente_id, usuario_id, observaciones || null]
-    );
-    const registro_id = regRes.rows[0].id;
-
-    // 4. TRATAMIENTOS Y MEDICAMENTOS
-    for (const t of (tratamientos || [])) {
-      let cie10 = t.patologia?.cie10 || t.cie10 || (typeof t.patologia === 'string' ? t.patologia : 'Z00.0');
-      if (cie10.length > 10) cie10 = 'Z00.0';
-
-      // Buscar patologia_id
-      const resP = await client.query('SELECT id FROM patologias_cie10 WHERE codigo = $1', [cie10]);
-      const patologia_id = resP.rows[0]?.id || 4; // Default Z00.0
-
-      const tIns = await client.query(
-        `INSERT INTO tratamientos(registro_id, patologia_id, descripcion) VALUES($1, $2, $3) RETURNING id`,
-        [registro_id, patologia_id, t.patologia?.nombre || (typeof t.patologia === 'string' ? t.patologia : 'Consulta')]
-      );
-      const t_id = tIns.rows[0].id;
-
-      for (const m of (t.medicamentos || [])) {
-        let pres = m.presentacion_seleccionada ? `${m.presentacion_seleccionada.forma || ''} ${m.presentacion_seleccionada.mg || ''}`.trim() : m.presentacion;
-        const medNombreFinal = m.nombre && m.nombre !== 'Medicamento' ? m.nombre : (t.patologia?.nombre ? `Med. para ${t.patologia.nombre}` : 'Medicamento no especificado');
-        await client.query(
-          `INSERT INTO medicamentos(tratamiento_id, nombre, presentacion, dosis, es_oficial) VALUES($1, $2, $3, $4, false)`,
-          [t_id, medNombreFinal, pres || null, m.dosis_seleccionada?.valor || m.dosis || null]
-        );
-      }
-    }
-
-    // 5. RESPUESTA EXITOSA
     await client.query('COMMIT');
-    console.log(`[REGISTRO] ✅ Guardado exitoso: ${codigoFinal} (ID: ${registro_id})`);
-    res.status(201).json({ success: true, codigo: codigoFinal, id: registro_id });
+    console.log(`[REGISTRO] ✅ Guardado exitoso: ${result.codigo} (ID: ${result.id})`);
+    res.status(201).json({ success: true, codigo: result.codigo, id: result.id });
 
-  } catch (e) {
+  } catch (error) {
     if (client) await client.query('ROLLBACK');
-    
-    // LOG DETALLADO PARA DEPURACIÓN
-    console.error('!!! REGISTRO ERROR ERROR !!!');
-    console.error('Mensaje:', e.message);
-    console.error('Stack:', e.stack);
-    console.error('Payload recibido:', JSON.stringify(req.body, null, 2));
-    
-    // Si el error es por falta de datos, retornar 400 con detalle
-    if (e.message.includes('null value') || e.message.includes('NOT NULL')) {
-      return res.status(400).json({ 
-        error: 'Datos incompletos', 
-        detalle: 'Faltan campos obligatorios en el registro.',
-        codigo_db: e.code 
-      });
+    handleError(res, error, 'Fallo al guardar registro médico');
+  } finally {
+    if (client) client.release();
+  }
+});
+
+// POST /api/sync — Sincronización masiva de registros offline (Refinamiento FASE 15)
+app.post('/api/sync', apiLimiter, authenticateToken, authorizeRoles('admin', 'medico', 'vocero'), async (req, res) => {
+  const { registros_offline } = req.body;
+  
+  if (!Array.isArray(registros_offline) || registros_offline.length === 0) {
+    return res.status(400).json({ error: 'No se recibieron registros para sincronizar.' });
+  }
+
+  const results = {
+    total: registros_offline.length,
+    exitosos: 0,
+    fallidos: 0,
+    detalles: []
+  };
+
+  const client = await pool.connect();
+  
+  try {
+    for (const reg of registros_offline) {
+      try {
+        await client.query('BEGIN');
+        const usuario_id = req.user.id;
+
+        // PROCESAR USANDO HELPER CENTRALIZADO
+        await insertarPacienteRegistroCompleto(client, usuario_id, reg);
+
+        await client.query('COMMIT');
+        results.exitosos++;
+      } catch (err) {
+        await client.query('ROLLBACK');
+        results.fallidos++;
+        results.detalles.push({ codigo: reg.codigo, error: err.message });
+        console.error(`[SYNC ERROR] Registro ${reg.codigo}:`, err.message);
+      }
     }
 
-    res.status(500).json({ 
-      error: 'Fallo crítico al guardar registro', 
-      detalle: e.message 
+    res.json({
+      success: true,
+      mensaje: `Sincronización finalizada: ${results.exitosos} exitosos, ${results.fallidos} fallidos.`,
+      stats: results
     });
+
+  } catch (error) {
+    handleError(res, error, 'Error crítico en el proceso de sincronización');
   } finally {
-    client.release();
+    if (client) client.release();
   }
 });
 
@@ -924,8 +1164,7 @@ app.get('/api/registros', authenticateToken, authorizeRoles('admin', 'medico', '
       total: result.rowCount
     });
   } catch (error) {
-    console.error('Error obteniendo registros:', error);
-    res.status(500).json({ error: 'Error interno del servidor' });
+    handleError(res, error, 'Error al obtener la lista de registros');
   }
 });
 
@@ -1332,7 +1571,16 @@ app.get('/api/estadisticas', authenticateToken, authorizeRoles('admin', 'medico'
       distribucion_triaje: distTriaje.rows,
       promedio_edad: parseFloat(promedioEdad.rows[0].promedio) || 0,
       estadisticas_por_sector: statsPorSector.rows,
-      filtros: { startDate, endDate } // Útil para feedback en frontend
+      geodatos: statsPorSector.rows.map(row => {
+        const coords = SECTORES_COORDS[row.sector] || { lat: 10.5076, lng: -66.9312 };
+        return {
+          ...row,
+          latitud: coords.lat,
+          longitud: coords.lng,
+          intensidad: Math.min(row.total_pacientes / 20, 1)
+        };
+      }),
+      filtros: { startDate, endDate } 
     });
   } catch (error) {
     console.error('Error obteniendo estadísticas:', error);
@@ -1595,6 +1843,54 @@ app.post('/api/admin/medicamentos/fusionar', authenticateToken, authorizeRoles('
     }
 });
 
+// ————————————————————————————————————————————————
+// POST /api/admin/medicamentos/canonizar
+// Convierte una brecha manual en medicamento OFICIAL del catálogo
+// Solo Admin. Actualiza todos los registros históricos que la escribieron
+// a mano y la marca como es_oficial=true, sin borrar el historial.
+// ————————————————————————————————————————————————
+app.post('/api/admin/medicamentos/canonizar', authenticateToken, authorizeRoles('admin'), async (req, res) => {
+    const { nombre } = req.body;
+    if (!nombre || !String(nombre).trim()) {
+        return res.status(400).json({ error: 'El nombre del medicamento es obligatorio.' });
+    }
+    const nombreNorm = String(nombre).trim();
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        // 1. Marcar todos los registros históricos con ese nombre a mano como oficiales
+        const resUpdate = await client.query(
+            `UPDATE medicamentos
+             SET es_oficial = true, nombre = $1
+             WHERE LOWER(TRIM(nombre)) = LOWER(TRIM($1))
+             RETURNING id`,
+            [nombreNorm]
+        );
+
+        // 2. Si no existían registros históricos, insertamos uno como semilla del catálogo
+        // (opcional, para que aparezca en los desplegables en futuros registros)
+        // Esto depende de tu arquitectura de catálogo de medicamentos.
+        // Si medicamentos solo existen atados a tratamientos, el step anterior es suficiente.
+        const afectados = resUpdate.rowCount || 0;
+
+        await client.query('COMMIT');
+        res.json({
+            success: true,
+            message: `Medicamento "${nombreNorm}" añadido oficialmente al catálogo. ${afectados} receta(s) histórica(s) actualizadas.`,
+            canonizado: nombreNorm,
+            registros_afectados: afectados
+        });
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error('Error al canonizar medicamento:', err);
+        res.status(500).json({ error: 'Error al añadir medicamento al catálogo oficial.' });
+    } finally {
+        client.release();
+    }
+});
+
+
 // ============================================================
 // RUTAS DE SINCRONIZACIÓN (OFFLINE → ONLINE)
 // ============================================================
@@ -1727,6 +2023,475 @@ app.post('/api/sync', authenticateToken, authorizeRoles('admin', 'medico', 'voce
     res.status(500).json({ error: 'Error interno del servidor' });
   } finally {
     client.release();
+  }
+});
+
+// ============================================================
+// RUTAS DE DISCAPACIDAD Y MOVILIDAD REDUCIDA (FASE 2)
+// ============================================================
+
+app.get('/api/catalogos/discapacidades', authenticateToken, async (req, res) => {
+  try {
+    const result = await pool.query('SELECT id, nombre, descripcion FROM cat_discapacidades ORDER BY id ASC');
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error obteniendo catálogo de discapacidades:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+app.post('/api/pacientes/:cedula/discapacidades', authenticateToken, authorizeRoles('admin', 'medico', 'vocero'), async (req, res) => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const cedula = normalizarCedula(req.params.cedula);
+    const { discapacidades, requiere_vigilancia } = req.body;
+    
+    // Obtener ID del paciente
+    const pacRes = await client.query('SELECT id FROM pacientes WHERE cedula = $1', [cedula]);
+    if (pacRes.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Paciente no encontrado' });
+    }
+    const paciente_id = pacRes.rows[0].id;
+
+    // Actualizar bandera de vigilancia
+    if (requiere_vigilancia !== undefined) {
+      await client.query('UPDATE pacientes SET requiere_vigilancia_constante = $1 WHERE id = $2', [requiere_vigilancia, paciente_id]);
+    }
+
+    // Insertar/actualizar discapacidades (Factorizado)
+    if (discapacidades) {
+      await sincronizarDiscapacidades(client, paciente_id, discapacidades);
+    }
+
+    await client.query('COMMIT');
+    res.json({ message: 'Perfil de discapacidad actualizado exitosamente' });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Error actualizando discapacidades:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  } finally {
+    client.release();
+  }
+});
+
+// ============================================================
+// RUTAS DE VACUNACIÓN PEDIÁTRICA (FASE 3)
+// ============================================================
+
+app.get('/api/catalogos/vacunas', authenticateToken, async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM cat_vacunas_mpps ORDER BY edad_minima_meses ASC, id ASC');
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error obteniendo catálogo de vacunas:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+app.get('/api/pacientes/:cedula/vacunas', authenticateToken, authorizeRoles('admin', 'medico', 'vocero'), async (req, res) => {
+  const { cedula: cedulaOrId } = req.params;
+  const isNumericId = /^\d+$/.test(cedulaOrId) && cedulaOrId.length < 10;
+  
+  try {
+    // Lookup de paciente idéntico al perfil principal para consistencia total
+    // Soporta Cédula, ID numérico string, o marcador '-' para pacientes sin identificación
+    const pRes = await pool.query(
+      'SELECT id, cedula, nombre, fecha_nacimiento FROM pacientes WHERE (cedula = $1 OR id::text = $1 OR (cedula IS NULL AND $1 = \'-\')) AND activo = true LIMIT 1',
+      [cedulaOrId]
+    );
+
+    if (pRes.rows.length === 0) {
+        return res.status(404).json({ error: 'Paciente no encontrado' });
+    }
+    const paciente = pRes.rows[0];
+    
+    const edadMeses = paciente.fecha_nacimiento ? 
+      Math.floor((new Date() - new Date(paciente.fecha_nacimiento)) / (1000 * 60 * 60 * 24 * 30.44)) : null;
+
+    // Obtener vacunas aplicadas
+    const aplicadasQuery = `
+      SELECT rv.id, rv.vacuna_id, cv.nombre as vacuna_nombre, rv.numero_dosis, rv.fecha_aplicacion,
+             u.nombre || ' ' || u.apellido as aplicada_por_nombre
+      FROM registro_vacunacion rv
+      JOIN cat_vacunas_mpps cv ON rv.vacuna_id = cv.id
+      LEFT JOIN usuarios u ON rv.aplicada_por = u.id
+      WHERE rv.paciente_id = $1
+      ORDER BY rv.fecha_aplicacion DESC
+    `;
+    const aplicadasRes = await pool.query(aplicadasQuery, [paciente.id]);
+
+    // Resumen del esquema (Enviamos dosis_totales real y dosis_requeridas para compatibilidad estricta con FE viejo/nuevo)
+    const esquemaRes = await pool.query(`
+      SELECT id, nombre, edad_minima_meses, 
+             COALESCE(dosis_totales, 1) as dosis_totales,
+             COALESCE(dosis_totales, 1) as dosis_requeridas,
+             descripcion
+      FROM cat_vacunas_mpps 
+      ORDER BY edad_minima_meses ASC
+    `);
+    
+    res.json({
+      edad_meses_calculada: edadMeses,
+      esquema_mpps: esquemaRes.rows,
+      dosis_aplicadas: aplicadasRes.rows
+    });
+  } catch (error) {
+    console.error('Error obteniendo historial de vacunas:', error);
+    res.status(500).json({ error: 'Error obteniendo historial de vacunas: ' + error.message });
+  }
+});
+
+app.post('/api/pacientes/:cedula/vacunas', authenticateToken, authorizeRoles('admin', 'medico'), async (req, res) => {
+  const client = await pool.connect();
+  const { cedula: cedulaOrId } = req.params;
+  const isNumericId = /^\d+$/.test(cedulaOrId) && cedulaOrId.length < 10;
+
+  try {
+    await client.query('BEGIN');
+    const { vacuna_id, numero_dosis, fecha_aplicacion, lote_vacuna } = req.body;
+    
+    const pacRes = await client.query(
+      isNumericId 
+        ? 'SELECT id FROM pacientes WHERE id = $1'
+        : 'SELECT id FROM pacientes WHERE cedula = $1',
+      [cedulaOrId]
+    );
+    
+    if (pacRes.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Paciente no encontrado' });
+    }
+    const paciente_id = pacRes.rows[0].id;
+
+    const existe = await client.query(
+      'SELECT id FROM registro_vacunacion WHERE paciente_id = $1 AND vacuna_id = $2 AND numero_dosis = $3',
+      [paciente_id, vacuna_id, numero_dosis]
+    );
+
+    if (existe.rows.length > 0) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ error: 'Esta dosis ya se encuentra registrada para este paciente.' });
+    }
+    
+    await client.query(
+      `INSERT INTO registro_vacunacion (paciente_id, vacuna_id, numero_dosis, fecha_aplicacion, lote_vacuna, aplicada_por)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [paciente_id, vacuna_id, numero_dosis, fecha_aplicacion || new Date(), lote_vacuna || null, req.user.id]
+    );
+
+    await client.query('COMMIT');
+    res.status(201).json({ message: 'Dosis de vacuna registrada exitosamente' });
+  } catch (error) {
+    if (client) await client.query('ROLLBACK');
+    console.error('Error registrando vacuna:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  } finally {
+    client.release();
+  }
+});
+
+app.get('/api/reportes/vacunas', authenticateToken, authorizeRoles('admin', 'medico'), async (req, res) => {
+  try {
+    const query = `
+      SELECT 
+        v.nombre as biologico, 
+        COUNT(rv.id) as total_aplicadas,
+        MAX(rv.fecha_aplicacion) as ultima_aplicacion
+      FROM cat_vacunas_mpps v
+      LEFT JOIN registro_vacunacion rv ON v.id = rv.vacuna_id
+      GROUP BY v.id, v.nombre
+      ORDER BY total_aplicadas DESC
+    `;
+    const result = await pool.query(query);
+    res.json({ analiticas: result.rows });
+  } catch (error) {
+    console.error('Error generando reporte de salud:', error);
+    res.status(500).json({ error: 'Error generando analíticas' });
+  }
+});
+
+// Endpoint Maestro Fase 19: Radiografía Epidemiológica de Vacunación Pediátrica
+app.get('/api/reportes/vacunacion-pediatrica', authenticateToken, authorizeRoles('admin', 'medico', 'vocero'), async (req, res) => {
+  try {
+    // 1. Obtener todas las vacunas del MPPS
+    const vacunasRes = await pool.query('SELECT * FROM cat_vacunas_mpps');
+    const vacunas = vacunasRes.rows;
+
+    // 2. Obtener todos los niños (<= 12 años, es decir 144 meses) usando cálculo robusto PostgreSQL
+    const pacientesRes = await pool.query(`
+      SELECT id, nombre, apellido, fecha_nacimiento,
+             (EXTRACT(YEAR FROM age(CURRENT_DATE, fecha_nacimiento)) * 12 + 
+              EXTRACT(MONTH FROM age(CURRENT_DATE, fecha_nacimiento))) AS edad_meses
+      FROM pacientes 
+      WHERE activo = true AND fecha_nacimiento IS NOT NULL 
+        AND fecha_nacimiento >= (CURRENT_DATE - INTERVAL '12 years')
+    `);
+    
+    const infantes = pacientesRes.rows;
+    // fallback edad_meses to 0 if null
+    infantes.forEach(i => i.edad_meses = i.edad_meses || 0);
+    const infantIds = infantes.map(p => p.id);
+
+    // 3. Obtener el registro de vacunación de todos estos niños
+    let aplicaciones = [];
+    if (infantIds.length > 0) {
+      const appRes = await pool.query(`
+        SELECT paciente_id, vacuna_id, numero_dosis
+        FROM registro_vacunacion
+        WHERE paciente_id = ANY($1)
+      `, [infantIds]);
+      aplicaciones = appRes.rows;
+    }
+
+    // 4. Motor Analítico en memoria cruzando datos Requeridos vs Obtenidos
+    let totalInfantes = infantes.length;
+    let infantesProtegidos = 0; 
+    let vacunasAtrasadas = {}; 
+    
+    vacunas.forEach(v => {
+      vacunasAtrasadas[v.id] = { id: v.id, nombre: v.nombre, faltantes: 0 };
+    });
+
+    infantes.forEach(infante => {
+      let esquemaCompleto = true;
+      const dosisAplicadas = aplicaciones.filter(a => a.paciente_id === infante.id);
+      
+      vacunas.forEach(vac => {
+         // Si el niño ya tiene la edad mínima para recibir ESTA vacuna
+         if (infante.edad_meses >= vac.edad_minima_meses) {
+             const dosisPuestas = dosisAplicadas.filter(a => a.vacuna_id === vac.id).length;
+             const requeridas = vac.dosis_totales || 1;
+             
+             if (dosisPuestas < requeridas) {
+                 esquemaCompleto = false; // El niño está Atrasado/En Riesgo
+                 // Sumar al ranking de brechas comunitarias la cantidad de niños a los que les falta
+                 vacunasAtrasadas[vac.id].faltantes += 1;
+             }
+         }
+      });
+      
+      // Si salió del ciclo foreach intacto, es un niño 100% inmunizado (Inmunidad de Rebaño)
+      if (esquemaCompleto) infantesProtegidos++;
+    });
+
+    // 5. Ordenar el Top de Riesgo Epidemiológico Comunitario
+    const ranking = Object.values(vacunasAtrasadas)
+      .filter(v => v.faltantes > 0)
+      .sort((a,b) => b.faltantes - a.faltantes)
+      .slice(0, 5); 
+
+    res.json({
+       total_infantes: totalInfantes,
+       protegidos: infantesProtegidos,
+       riesgo: totalInfantes - infantesProtegidos,
+       cobertura_pct: totalInfantes > 0 ? parseFloat(((infantesProtegidos / totalInfantes) * 100).toFixed(1)) : 0,
+       ranking_brechas: ranking
+    });
+
+  } catch (error) {
+    console.error("Error generando analíticas PAI:", error);
+  }
+});
+
+// Endpoint Fase 21: Analíticas de Discapacidad y Movilidad Reducida (CONAPDIS)
+app.get('/api/reportes/discapacidad', authenticateToken, authorizeRoles('admin', 'medico', 'vocero'), async (req, res) => {
+  try {
+    const query = `
+      SELECT 
+        (SELECT COUNT(*) FROM pacientes WHERE activo = true) as total_poblacion,
+        COUNT(DISTINCT pd.paciente_id) as total_con_discapacidad,
+        COUNT(DISTINCT p.id) FILTER (WHERE p.requiere_vigilancia_constante = true) as total_vigilancia,
+        COUNT(pd.id) FILTER (WHERE pd.posee_certificado_conapdis = true) as total_certificados,
+        COALESCE((
+          SELECT json_agg(json_build_object('name', sub.nombre, 'population', count_row))
+          FROM (
+            SELECT cd.nombre, COUNT(pd2.id) as count_row
+            FROM cat_discapacidades cd
+            LEFT JOIN paciente_discapacidades pd2 ON cd.id = pd2.discapacidad_id
+            GROUP BY cd.nombre
+          ) sub
+        ), '[]'::json) as distribucion_tipos
+      FROM pacientes p
+      LEFT JOIN paciente_discapacidades pd ON p.id = pd.paciente_id
+      WHERE p.activo = true
+    `;
+    const result = await pool.query(query);
+    const data = result.rows[0];
+
+    res.json({
+      total_poblacion: parseInt(data.total_poblacion || 0),
+      total_con_discapacidad: parseInt(data.total_con_discapacidad || 0),
+      total_vigilancia: parseInt(data.total_vigilancia || 0),
+      total_certificados: parseInt(data.total_certificados || 0),
+      indice_discapacidad: data.total_poblacion > 0 ? parseFloat(((data.total_con_discapacidad / data.total_poblacion) * 100).toFixed(1)) : 0,
+      distribucion_tipos: data.distribucion_tipos
+    });
+  } catch (error) {
+    console.error('Error generando analíticas de discapacidad:', error);
+    res.status(500).json({ error: 'Error generando analíticas de discapacidad' });
+  }
+});
+
+app.delete('/api/pacientes/:cedula/vacunas/:dosis_id', authenticateToken, authorizeRoles('admin', 'medico'), async (req, res) => {
+  const client = await pool.connect();
+  const { cedula: cedulaOrId, dosis_id } = req.params;
+  const isNumericId = /^\d+$/.test(cedulaOrId) && cedulaOrId.length < 10;
+
+  try {
+    await client.query('BEGIN');
+    const pacRes = await client.query(
+      isNumericId 
+        ? 'SELECT id FROM pacientes WHERE id = $1'
+        : 'SELECT id FROM pacientes WHERE cedula = $1',
+      [cedulaOrId]
+    );
+
+    if (pacRes.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Paciente no encontrado' });
+    }
+    const paciente_id = pacRes.rows[0].id;
+
+    const result = await client.query(
+      'DELETE FROM registro_vacunacion WHERE id = $1 AND paciente_id = $2 RETURNING id', 
+      [dosis_id, paciente_id]
+    );
+    
+    if (result.rowCount === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Dosis no encontrada para este paciente' });
+    }
+
+    await client.query('COMMIT');
+    res.json({ message: 'Dosis eliminada correctamente' });
+  } catch (error) {
+    if (client) await client.query('ROLLBACK');
+    console.error('Error eliminando dosis:', error);
+    res.status(500).json({ error: 'Error interno' });
+  } finally {
+    client.release();
+  }
+});
+
+// ============================================================
+// RUTAS DE JORNADAS Y NOTIFICACIONES (FASE 4 / Refinamiento FASE 15)
+// ============================================================
+
+app.post('/api/jornadas', apiLimiter, authenticateToken, authorizeRoles('admin', 'medico'), validateBody('jornada'), async (req, res) => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const { titulo, descripcion, fecha, lugar, sector } = req.body;
+    
+    // 1. Mapear fecha (Format: DD/MM/YYYY HH:MM -> ISO)
+    let fechaISO = null;
+    if (fecha && fecha.includes('/')) {
+       const [f, h] = fecha.split(' ');
+       const [d, m, a] = f.split('/');
+       fechaISO = `${a}-${m}-${d}T${h}:00`;
+    }
+
+    // 2. Mapear sector (Opcional) — Solo si el usuario seleccionó un sector específico
+    let sector_id = null;
+    if (sector && String(sector).trim() !== '') {
+      const sectorTrimmed = String(sector).trim();
+      const resS = await client.query('SELECT id FROM sectores WHERE nombre ILIKE $1', [sectorTrimmed]);
+      if (resS.rows.length > 0) sector_id = resS.rows[0].id;
+    }
+
+    // 3. Insertar jornada
+    const jornadaRes = await client.query(
+      `INSERT INTO jornadas_salud (titulo, descripcion, fecha_jornada, lugar, sector_id, creada_por)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+      [titulo, descripcion || '', fechaISO || new Date(), lugar, sector_id, req.user.id]
+    );
+    const jornada_id = jornadaRes.rows[0].id;
+
+    // 4. Generar notificaciones para los usuarios afectados
+    let notifQuery = 'SELECT id FROM usuarios WHERE activo = true';
+    let notifParams = [];
+    if (sector_id) {
+       notifQuery = 'SELECT id FROM usuarios WHERE sector_id = $1 AND activo = true';
+       notifParams = [sector_id];
+    }
+
+    const resU = await client.query(notifQuery, notifParams);
+    const mensajeNotif = `${titulo} el ${fecha} en ${lugar}. ${descripcion || ''}`;
+
+    for (const u of resU.rows) {
+      await client.query(
+        `INSERT INTO notificaciones_usuarios (usuario_id, jornada_id, titulo, mensaje, leida)
+         VALUES ($1, $2, $3, $4, false)`,
+        [u.id, jornada_id, `Nueva Jornada: ${titulo}`, mensajeNotif]
+      );
+    }
+
+    await client.query('COMMIT');
+    res.json({ success: true, jornada_id, notificados: resU.rowCount });
+  } catch (error) {
+    if (client) await client.query('ROLLBACK');
+    handleError(res, error, 'Error al crear la jornada comunitaria');
+  } finally {
+    if (client) client.release();
+  }
+});
+
+app.get('/api/jornadas', authenticateToken, async (req, res) => {
+  try {
+    const query = `
+      SELECT js.*, s.nombre as sector_nombre, u.nombre || ' ' || u.apellido as creador 
+      FROM jornadas_salud js
+      LEFT JOIN sectores s ON js.sector_id = s.id
+      LEFT JOIN usuarios u ON js.creada_por = u.id
+      WHERE js.activa = true AND js.fecha_jornada >= CURRENT_DATE
+      ORDER BY js.fecha_jornada ASC
+    `;
+    const result = await pool.query(query);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error obteniendo jornadas:', error);
+    res.status(500).json({ error: 'Error al cargar jornadas' });
+  }
+});
+
+app.get('/api/notificaciones', authenticateToken, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT * FROM notificaciones_usuarios 
+       WHERE usuario_id = $1 
+       ORDER BY created_at DESC LIMIT 50`,
+      [req.user.id]
+    );
+    // Calcular no leídas
+    const unread = result.rows.filter(r => !r.leida).length;
+    res.json({ no_leidas: unread, notificaciones: result.rows });
+  } catch (error) {
+    console.error('Error obteniendo notificaciones:', error);
+    res.status(500).json({ error: 'Error al cargar notificaciones' });
+  }
+});
+
+app.put('/api/notificaciones/:id/leer', authenticateToken, async (req, res) => {
+  try {
+    await pool.query('UPDATE notificaciones_usuarios SET leida = true WHERE id = $1 AND usuario_id = $2', [req.params.id, req.user.id]);
+    res.json({ message: 'Notificación marcada como leída' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al actualizar notificación' });
+  }
+});
+
+// ============================================================
+// MÓDULO DISCAPACIDAD (FASE 2)
+// ============================================================
+app.get('/api/discapacidades/catalogo', authenticateToken, async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM cat_discapacidades ORDER BY id ASC');
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error cargando catálogo discapacidades:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
