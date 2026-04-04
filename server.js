@@ -2409,18 +2409,11 @@ app.post('/api/jornadas', apiLimiter, authenticateToken, authorizeRoles('admin',
     );
     const jornada_id = jornadaRes.rows[0].id;
 
-    // 4. Generar notificaciones para los usuarios afectados
-    // FIX: Cuando hay sector, notificar a usuarios del sector + admins/médicos (sin importar sector)
-    // Cuando NO hay sector, notificar a TODOS los usuarios activos
-    let notifQuery = 'SELECT id FROM usuarios WHERE activo = true';
-    let notifParams = [];
-    if (sector_id) {
-       notifQuery = `SELECT DISTINCT u.id FROM usuarios u
-                     JOIN roles r ON u.rol_id = r.id
-                     WHERE u.activo = true 
-                     AND (u.sector_id = $1 OR r.nombre IN ('admin', 'medico'))`;
-       notifParams = [sector_id];
-    }
+    // 4. Generar notificaciones para TODOS los usuarios activos
+    // En la Parroquia 23 de Enero, toda la comunidad debe estar informada
+    // El sector se guarda en la jornada como referencia, pero TODOS reciben la notificación
+    const notifQuery = 'SELECT id FROM usuarios WHERE activo = true';
+    const notifParams = [];
 
     const resU = await client.query(notifQuery, notifParams);
     const mensajeNotif = `${titulo} el ${fecha} en ${lugar}. ${descripcion || ''}`;
