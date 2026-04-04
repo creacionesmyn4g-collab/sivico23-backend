@@ -2410,10 +2410,15 @@ app.post('/api/jornadas', apiLimiter, authenticateToken, authorizeRoles('admin',
     const jornada_id = jornadaRes.rows[0].id;
 
     // 4. Generar notificaciones para los usuarios afectados
+    // FIX: Cuando hay sector, notificar a usuarios del sector + admins/médicos (sin importar sector)
+    // Cuando NO hay sector, notificar a TODOS los usuarios activos
     let notifQuery = 'SELECT id FROM usuarios WHERE activo = true';
     let notifParams = [];
     if (sector_id) {
-       notifQuery = 'SELECT id FROM usuarios WHERE sector_id = $1 AND activo = true';
+       notifQuery = `SELECT DISTINCT u.id FROM usuarios u
+                     JOIN roles r ON u.rol_id = r.id
+                     WHERE u.activo = true 
+                     AND (u.sector_id = $1 OR r.nombre IN ('admin', 'medico'))`;
        notifParams = [sector_id];
     }
 
