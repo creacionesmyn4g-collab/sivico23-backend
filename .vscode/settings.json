@@ -1,0 +1,8 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^cd \"c:\\\\Users\\\\Windows 10 Pro\\\\Desktop\\\\SIVICO23_FASE2_FINAL\\\\backend\"; node -e \"const \\{ Pool \\} = require\\('pg'\\); require\\('dotenv'\\)\\.config\\(\\); const opts=process\\.env\\.DATABASE_URL\\?\\{connectionString:process\\.env\\.DATABASE_URL,ssl:process\\.env\\.DATABASE_URL\\.includes\\('railway\\.app'\\)\\?\\{rejectUnauthorized:false\\}:false\\}:\\{host:process\\.env\\.DB_HOST\\|\\|'localhost',port:process\\.env\\.DB_PORT\\|\\|5432,user:process\\.env\\.DB_USER,password:process\\.env\\.DB_PASSWORD,database:process\\.env\\.DB_NAME\\}; const pool=new Pool\\(opts\\); \\(async\\(\\)=>\\{ try\\{ const res=await pool\\.query\\('SELECT id, nombre FROM roles WHERE id=\\$1', \\[3\\]\\); console\\.log\\(JSON\\.stringify\\(res\\.rows,null,2\\)\\); \\}catch\\(e\\)\\{console\\.error\\(e\\);\\} finally\\{await pool\\.end\\(\\);\\}\\}\\)\\(\\);\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}

@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual de Usuario Exhaustivo - SIVICO23</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #059669; /* Verde esmeralda */
+            --primary-dark: #047857;
+            --secondary: #10B981; 
+            --accent: #F43F5E; /* Rojo rosa */
+            --dark: #1F2937;
+            --light: #F9FAFB;
+            --card-bg: #FFFFFF;
+            --text-muted: #6B7280;
+            --border-color: #E5E7EB;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.7;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: var(--card-bg);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            border-radius: 8px;
+        }
+        .header {
+            text-align: center;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 60px 20px;
+            border-radius: 20px;
+            margin-bottom: 50px;
+            box-shadow: 0 15px 30px rgba(16, 185, 129, 0.25);
+            position: relative;
+            overflow: hidden;
+        }
+        .header::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" stroke="rgba(255,255,255,0.1)" stroke-width="2" fill="none"/></svg>') repeat;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        .header h1 {
+            font-size: 3.2rem;
+            margin: 0 0 15px 0;
+            font-weight: 800;
+            letter-spacing: -1px;
+            position: relative;
+            z-index: 1;
+        }
+        .header p {
+            font-size: 1.3rem;
+            opacity: 0.95;
+            margin: 0;
+            position: relative;
+            z-index: 1;
+            font-weight: 300;
+        }
+        h2 {
+            color: var(--primary-dark);
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 10px;
+            display: inline-block;
+            margin-top: 50px;
+            font-weight: 700;
+        }
+        h3 {
+            color: var(--dark);
+            font-size: 1.5rem;
+            margin-top: 30px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        h3 i {
+            color: var(--primary);
+            font-size: 1.4rem;
+        }
+        p {
+            margin-bottom: 20px;
+        }
+        
+        /* Grid de Pantallas */
+        .screen-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+        .screen-card {
+            background: var(--light);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 30px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .screen-card:hover {
+            box-shadow: 0 15px 30px rgba(0,0,0,0.05);
+            transform: translateY(-5px);
+            border-color: var(--secondary);
+        }
+        .screen-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: var(--primary);
+        }
+        .screen-icon {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+            display: inline-block;
+            padding: 15px;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 12px;
+        }
+        
+        /* Listas y Pasos */
+        .step-list {
+            padding-left: 0;
+            list-style: none;
+            counter-reset: step-counter;
+        }
+        .step-list li {
+            position: relative;
+            padding-left: 60px;
+            margin-bottom: 25px;
+            background: white;
+            padding-top: 15px;
+            padding-bottom: 15px;
+            padding-right: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        }
+        .step-list li::before {
+            counter-increment: step-counter;
+            content: counter(step-counter);
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--primary);
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 10px rgba(5, 150, 105, 0.3);
+        }
+        
+        /* Roles */
+        .roles-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 40px;
+            background: #F3F4F6;
+            padding: 25px;
+            border-radius: 16px;
+        }
+        .role-box {
+            flex: 1;
+            min-width: 250px;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 5px solid;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .role-box h4 { margin: 0 0 10px 0; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;}
+        .admin-box { border-color: #DC2626; }
+        .admin-box h4 { color: #DC2626; }
+        .medico-box { border-color: #2563EB; }
+        .medico-box h4 { color: #2563EB; }
+        .vocero-box { border-color: #D97706; }
+        .vocero-box h4 { color: #D97706; }
+        
+        /* Alertas y Tips */
+        .alert {
+            padding: 25px;
+            border-radius: 16px;
+            margin: 30px 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+        }
+        .alert-info {
+            background-color: #EFF6FF;
+            border-left: 6px solid #3B82F6;
+        }
+        .alert-info i { color: #3B82F6; font-size: 2rem; }
+        .alert-warning {
+            background-color: #FFFBEB;
+            border-left: 6px solid #F59E0B;
+        }
+        .alert-warning i { color: #F59E0B; font-size: 2rem; }
+        .alert-danger {
+            background-color: #FEF2F2;
+            border-left: 6px solid var(--accent);
+        }
+        .alert-danger i { color: var(--accent); font-size: 2rem; }
+        
+        .divider {
+            height: 1px;
+            background: var(--border-color);
+            margin: 50px 0;
+            border: none;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        th, td {
+            padding: 15px 20px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        th {
+            background: var(--primary);
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+        }
+        tr:hover {
+            background-color: #F8FAFC;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <i class="fa-solid fa-book-open-reader" style="font-size: 4rem; margin-bottom: 20px; opacity: 0.9;"></i>
+            <h1>Manual de Usuario Completo</h1>
+            <p>Guía definitiva de operaciones para el Sistema SIVICO23</p>
+        </header>
+
+        <p style="font-size: 1.15rem; text-align: center; color: var(--text-muted); margin-bottom: 40px; max-width: 800px; margin-left: auto; margin-right: auto;">
+            Esta guía detalla exhaustivamente cada módulo, pantalla y función de la aplicación móvil SIVICO23, diseñada especialmente para optimizar la recolección y análisis de datos de salud en la Parroquia 23 de Enero.
+        </p>
+
+        <!-- SECCIÓN 1: ROLES -->
+        <h2>1. Estructura de Roles y Permisos</h2>
+        <p>SIVICO23 es un sistema jerárquico. Las funciones visibles en el menú dependerán de la cuenta con la que haya iniciado sesión.</p>
+        
+        <div class="roles-container">
+            <div class="role-box admin-box">
+                <h4><i class="fa-solid fa-user-shield"></i> Administrador</h4>
+                <p>Nivel de gestión del Ambulatorio. Tiene acceso exclusivo al <strong>Dashboard Estadístico (Analítica)</strong>, puede crear nuevas cuentas de usuario, y posee la potestad de <strong>Fusionar Medicamentos</strong> en caso de errores en recetas manuales.</p>
+            </div>
+            <div class="role-box medico-box">
+                <h4><i class="fa-solid fa-stethoscope"></i> Médico / Enfermero</h4>
+                <p>Nivel clínico. Su función principal es el llenado riguroso de la pestaña <strong>Registro</strong>. Puede buscar historiales, asignar triajes, múltiples diagnósticos CIE-10 y recetar medicamentos oficiales.</p>
+            </div>
+            <div class="role-box vocero-box">
+                <h4><i class="fa-solid fa-bullhorn"></i> Vocero Comunitario</h4>
+                <p>Nivel de campo. Diseñado para el trabajo casa por casa. Puede registrar pacientes, funcionar 100% <strong>Offline</strong> (sin internet) y es el único rol con acceso directo al botón <strong>SOS Emergencia GPS</strong>.</p>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- SECCIÓN 2: PANTALLAS PRINCIPALES -->
+        <h2>2. Guía de Pantallas y Navegación</h2>
+        <p>A continuación, se detalla el uso correcto de cada pestaña visible en la barra inferior (Bottom Navigation Bar) de la aplicación:</p>
+
+        <div class="screen-grid">
+            <!-- Login -->
+            <div class="screen-card">
+                <i class="fa-solid fa-right-to-bracket screen-icon"></i>
+                <h3>Pantalla de Acceso (Login)</h3>
+                <p>La puerta de entrada segura al sistema mediante credenciales JWT.</p>
+                <ul class="step-list">
+                    <li>Ingrese su <strong>Cédula de Identidad</strong> (Ej: V-12345678). Debe incluir la letra mayúscula y el guion.</li>
+                    <li>Ingrese su contraseña asignada.</li>
+                    <li>La app verificará si hay conexión; de haberla, validará sus datos en el servidor y le asignará su rol automáticamente.</li>
+                </ul>
+            </div>
+
+            <!-- Inicio -->
+            <div class="screen-card">
+                <i class="fa-solid fa-house-chimney-medical screen-icon"></i>
+                <h3>Pantalla de Inicio (Home)</h3>
+                <p>El centro de mando diario. Muestra resúmenes rápidos y accesos vitales.</p>
+                <ul class="step-list">
+                    <li><strong>Resumen Diario:</strong> Muestra cuántos reportes ha creado localmente hoy.</li>
+                    <li><strong>Sincronización:</strong> El botón verde "Sincronizar Datos". Es crítico pulsarlo al llegar a una zona con WiFi. Envía todos los registros huérfanos a la base de datos central PostgreSQL.</li>
+                    <li><strong>Categorías:</strong> Un carrusel visual informando la cantidad total de patologías (ej. Gastrointestinales, Neurológicas) disponibles en el catálogo de la app.</li>
+                </ul>
+            </div>
+
+            <!-- Registro -->
+            <div class="screen-card">
+                <i class="fa-solid fa-clipboard-user screen-icon"></i>
+                <h3>Registro Clínico (Corazón del Sistema)</h3>
+                <p>El formulario más potente de SIVICO23, mejorado en la Fase 2.</p>
+                <ul class="step-list">
+                    <li><strong>Búsqueda de Paciente:</strong> Al teclear la cédula de un paciente existente, todos sus datos personales (Edad, Sexo, Sector) se autocompletan mágicamente.</li>
+                    <li><strong>Signos Vitales y Triaje:</strong> Permite ingresar Tensión Arterial, Temperatura, Pulso, y asignar la urgencia (Rojo, Amarillo, Verde).</li>
+                    <li><strong>Diagnóstico Multi-Patología:</strong> Permite abrir categorías (Ej: Enfermedades Renales) y seleccionar no una, sino <em>múltiples enfermedades</em> simultáneamente.</li>
+                    <li><strong>Tratamiento Detallado:</strong> Al elegir una enfermedad, aparecen sus medicinas típicas. Puede indicar la Presentación (Ej: 'Tab 500mg' o 'Jarabe') y configurar dosis exactas.</li>
+                </ul>
+            </div>
+
+            <!-- Registro PAI (NUEVO) -->
+            <div class="screen-card" style="border-top-color: #3B82F6;">
+                <i class="fa-solid fa-syringe screen-icon" style="color: #3B82F6; background: rgba(59, 130, 246, 0.1);"></i>
+                <h3>Inmunización (PAI Pediátrico)</h3>
+                <p>Módulo especializado en el control de vacunas para niños.</p>
+                <ul class="step-list">
+                    <li><strong>Búsqueda Independiente:</strong> Permite buscar niños por cédula o nombre para ver su esquema mensual.</li>
+                    <li><strong>Registro de Dosis:</strong> Permite seleccionar la vacuna (ej: Pentavalente), el número de dosis y cargar el lote.</li>
+                    <li><strong>Alertas de Mora:</strong> El sistema indica visualmente si un niño tiene dosis pendientes para su edad cronológica.</li>
+                </ul>
+            </div>
+
+            <!-- Dashboard -->
+            <div class="screen-card" style="border-top-color: var(--accent);">
+                <i class="fa-solid fa-chart-pie screen-icon" style="color: var(--accent);"></i>
+                <h3>Dashboard Epidemiológico (v3.1)</h3>
+                <p>Centro de inteligencia de datos en tiempo real.</p>
+                <ul class="step-list">
+                    <li><strong>Filtro PAI (NUEVO):</strong> Visualiza la cobertura de inmunidad de rebaño y el ranking de vacunas más necesitadas.</li>
+                    <li><strong>Exportación PDF Completa:</strong> Genera informes formales con gráficos y tablas de brechas para impresión.</li>
+                    <li><strong>Analítica de Discapacidad:</strong> Muestra la distribución de certificados CONAPDIS por sector.</li>
+                </ul>
+            </div>
+            
+            <!-- Jornadas (NUEVO) -->
+            <div class="screen-card" style="border-top-color: #8B5CF6;">
+                <i class="fa-solid fa-calendar-check screen-icon" style="color: #8B5CF6; background: rgba(139, 92, 246, 0.1);"></i>
+                <h3>Jornadas y Avisos</h3>
+                <p>Planificación de eventos de salud comunitaria.</p>
+                <ul class="step-list">
+                    <li><strong>Crear Jornada:</strong> Los administradores pueden agendar operativos médicos en sectores específicos.</li>
+                    <li><strong>Notificaciones:</strong> El sistema envía un aviso automático a todos los usuarios para coordinar la logística.</li>
+                </ul>
+            </div>
+            
+            <!-- Historial -->
+            <div class="screen-card">
+                <i class="fa-solid fa-folder-open screen-icon"></i>
+                <h3>Historial de Registros</h3>
+                <p>Auditoría y revisión de consultas previas.</p>
+                <ul class="step-list">
+                    <li>Muestra una lista cronológica de los pacientes atendidos, con fecha, hora y nivel de triaje.</li>
+                    <li>Los reportes marcados con un ícono de nube están respaldados en el servidor. Los marcados con un ícono local aún esperan sincronización.</li>
+                    <li>Al tocar un registro, se abren los detalles completos de esa consulta.</li>
+                </ul>
+            </div>
+
+            <!-- Botón SOS -->
+            <div class="screen-card" style="border-top-color: #EF4444;">
+                <i class="fa-solid fa-truck-medical screen-icon" style="color: #EF4444; background: rgba(239, 68, 68, 0.1);"></i>
+                <h3>Emergencia (SOS)</h3>
+                <p>Función exclusiva para voceros en campo.</p>
+                <ul class="step-list">
+                    <li>Genera una solicitud prioritaria de ambulancia o paramédicos directamente al ambulatorio.</li>
+                    <li>Activa internamente el GPS del teléfono para capturar la Latitud y Longitud exacta de la casa donde ocurre la emergencia dentro de la Parroquia.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <i class="fa-solid fa-circle-info"></i>
+            <div>
+                <strong>Entendiendo la "Sincronización Offline":</strong> SIVICO23 nunca le impedirá trabajar si se corta la luz o el WiFi. Todo lo que haga en la pestaña "Registro" se guarda primero en la memoria interna (AsyncStorage) del teléfono. Cuando vuelva a tener conexión a internet, simplemente vaya a Inicio y presione <strong>"Sincronizar"</strong>; el sistema enviará los datos silenciosamente al servidor principal de PostgreSQL.
+            </div>
+        </div>
+
+        <h2>4. Módulo de Vacunación y Discapacidad</h2>
+        <p>En SIVICO23 se incorporan dos módulos de atención clave para el seguimiento sanitario: la <strong>vacunación PAI</strong> y el registro de <strong>discapacidad</strong>.</p>
+        <ul class="step-list">
+            <li><strong>Registro Infante:</strong> Use la pantalla <strong>Registro Infante</strong> para documentar vacunas pediátricas, registrar número de dosis, lote y fecha.</li>
+            <li><strong>Catálogo de Vacunas:</strong> Seleccione la vacuna adecuada (ej: BCG, Pentavalente, COVID-19) y verifique el esquema de dosis según la edad.</li>
+            <li><strong>Discapacidad CONAPDIS:</strong> En el control del paciente, registre si tiene certificado de discapacidad, el tipo de discapacidad y el número de certificado si corresponde.</li>
+            <li><strong>Historial de seguimiento:</strong> El sistema guarda el detalle de cada vacuna y de cada discapacidad para que el equipo de salud pueda revisar el caso en cualquier momento.</li>
+        </ul>
+
+        <h2>5. Pantallas Clave del Sistema</h2>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Pantalla</th>
+                        <th>Función Principal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Login</strong></td>
+                        <td>Acceso seguro con credenciales y asignación de rol.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Inicio</strong></td>
+                        <td>Resumen rápido de datos, estado de sincronización y accesos directos.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Registro</strong></td>
+                        <td>Creación de consultas médicas, diagnósticos, recetas y triaje.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Registro Infante</strong></td>
+                        <td>Control de inmunizaciones PAI y seguimiento de vacunas pediátricas.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>PaiPrincipal</strong></td>
+                        <td>Visión general de la cobertura de vacunación por edad y sector.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Historial</strong></td>
+                        <td>Consulta de registros previos y auditoría de atenciones pasadas.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Notificaciones</strong></td>
+                        <td>Revisión de alertas sobre jornadas y mensajes del sistema.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Emergencia</strong></td>
+                        <td>Envía alertas SOS con ubicación GPS para respuesta inmediata.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h2>6. Recomendaciones para Usuarios</h2>
+        <ul class="step-list">
+            <li>Sincronice los datos siempre que tenga conexión estable para evitar pérdidas.</li>
+            <li>Utilice la búsqueda de pacientes antes de crear un nuevo registro para evitar duplicados.</li>
+            <li>Revise el perfil del paciente antes de guardar cambios importantes como dirección o teléfono.</li>
+            <li>Los administradores deben consultar periódicamente la sección <strong>Gestión Personal</strong> para actualizar permisos y roles.</li>
+        </ul>
+
+        <div class="divider"></div>
+
+        <!-- SECCIÓN 3: DICCIONARIO MÉDICO -->
+        <h2>3. Uso Avanzado del Gestor de Medicamentos</h2>
+        <p>En el formulario de registro, la sección de Diagnóstico es la más compleja e importante de diligenciar correctamente.</p>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Catálogo</th>
+                        <th>Comportamiento en la App</th>
+                        <th>Acción Recomendada</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Selección CIE-10</strong></td>
+                        <td>Al abrir una categoría (Ej: Metabólicas), verá las patologías codificadas bajo el estándar mundial de la OMS.</td>
+                        <td>Marque las casillas de todas las enfermedades que sufre el paciente actualmente.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Medicamentos Sugeridos</strong></td>
+                        <td>Debajo de cada patología seleccionada, aparecerán botones con medicinas normadas por el MPPS.</td>
+                        <td>Seleccione las pastillas o inyecciones que le va a recetar de la lista verde proveída.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Entrada Manual (Otro)</strong></td>
+                        <td>Si el doctor indica una medicina que no está en la base de datos oficial, debe presionar "Agregar Otro" y escribirlo a mano.</td>
+                        <td>Asegúrese de escribir con buena ortografía. Esto activará la alerta de "Brechas" en el Dashboard del administrador.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="alert alert-warning">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <div>
+                <strong>Advertencia de Mantenimiento de Hardware:</strong> Dado que SIVICO23 almacena datos offline, si el teléfono se formatea, se resetea de fábrica o si se desinstala y borra la caché de la aplicación <em>ANTES</em> de haber presionado el botón de "Sincronizar", esos registros médicos locales se perderán permanentemente. Sincronice diariamente.
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <footer style="text-align: center; color: var(--text-muted); padding-top: 20px;">
+            <p style="margin-bottom: 5px;"><strong>Manual Oficial de Operatoria SIVICO23</strong></p>
+            <p style="font-size: 0.9rem;">Versión 3.1 (Arquitectura de 17 Tablas) - Proyecto Comunitario IUTEPAL</p>
+            <p style="font-size: 0.8rem; margin-top: 15px;"><i class="fa-regular fa-copyright"></i> 2026 Reservados todos los derechos para el uso de la Parroquia 23 de Enero.</p>
+        </footer>
+
+    </div>
+</body>
+</html>

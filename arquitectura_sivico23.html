@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arquitectura SIVICO23</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(180deg, #e8f4fc 0%, #d0e8f7 30%, #c5dff0 60%, #daeaf5 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 30px 10px;
+  }
+
+  .container {
+    width: 720px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 22px;
+  }
+
+  /* TITLE */
+  .main-title { text-align: center; }
+  .main-title h1 {
+    font-size: 34px;
+    font-weight: 900;
+    color: #0c2d57;
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+  }
+  .main-title .subtitle {
+    font-size: 14px;
+    color: #5a7da8;
+    font-weight: 500;
+    background: rgba(255,255,255,0.6);
+    display: inline-block;
+    padding: 4px 18px;
+    border-radius: 20px;
+    border: 1px solid rgba(12,45,87,0.1);
+  }
+
+  /* CARDS */
+  .card {
+    background: white;
+    border-radius: 16px;
+    padding: 18px 22px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    border: 1px solid rgba(0,0,0,0.05);
+    text-align: center;
+    position: relative;
+  }
+  .card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    margin-bottom: 8px;
+  }
+  .card h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #0c2d57;
+    margin-bottom: 4px;
+  }
+  .card .detail {
+    font-size: 12px;
+    color: #6b8ab5;
+    font-weight: 500;
+  }
+  .card .tech {
+    font-size: 11px;
+    color: #94adc7;
+    font-weight: 600;
+    margin-top: 2px;
+  }
+
+  /* GRIDS */
+  .row { display: flex; gap: 16px; justify-content: center; width: 100%; }
+  .row .card { flex: 1; min-width: 0; }
+  .card-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
+  .card-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; width: 100%; }
+  .card-row-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; width: 100%; }
+
+  /* ARROW */
+  .arrow { display: flex; flex-direction: column; align-items: center; gap: 0; }
+  .arrow-line { width: 3px; height: 28px; background: linear-gradient(180deg, #3b82f6, #06b6d4); border-radius: 2px; }
+  .arrow-head { width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 10px solid #06b6d4; }
+
+  /* CONNECTOR LABEL */
+  .connector-label {
+    font-size: 10px; color: #3b82f6; font-weight: 600;
+    background: rgba(59,130,246,0.06); padding: 2px 12px;
+    border-radius: 10px; border: 1px solid rgba(59,130,246,0.15);
+    display: inline-block; margin: 4px 0;
+  }
+
+  /* SECTION BORDER */
+  .section-border {
+    border: 2px solid rgba(59,130,246,0.12);
+    border-radius: 20px; padding: 18px 16px;
+    width: 100%; background: rgba(255,255,255,0.3);
+  }
+
+  /* PILLS */
+  .pills { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin-top: 8px; }
+  .pill {
+    font-size: 10px; font-weight: 600; padding: 3px 10px;
+    border-radius: 12px; background: rgba(59,130,246,0.08);
+    color: #2563eb; border: 1px solid rgba(59,130,246,0.15);
+  }
+  .pill.green { background: rgba(5,150,105,0.08); color: #059669; border-color: rgba(5,150,105,0.15); }
+  .pill.purple { background: rgba(124,58,237,0.08); color: #7c3aed; border-color: rgba(124,58,237,0.15); }
+  .pill.orange { background: rgba(217,119,6,0.08); color: #d97706; border-color: rgba(217,119,6,0.15); }
+
+  /* COLORS */
+  .bg-blue { background: linear-gradient(135deg, #1e6bb8, #2980d6); }
+  .bg-green { background: linear-gradient(135deg, #059669, #10b981); }
+  .bg-purple { background: linear-gradient(135deg, #7c3aed, #8b5cf6); }
+  .bg-orange { background: linear-gradient(135deg, #d97706, #f59e0b); }
+  .bg-teal { background: linear-gradient(135deg, #0891b2, #06b6d4); }
+  .bg-red { background: linear-gradient(135deg, #dc2626, #ef4444); }
+  .bg-emerald { background: linear-gradient(135deg, #047857, #059669); }
+  .bg-render { background: linear-gradient(135deg, #5a3edc, #7c5cfc); }
+  .icon-white { color: white; }
+
+  /* FLOW SECTION */
+  .flow-section {
+    background: linear-gradient(135deg, #0f172a, #1e3a5f);
+    border-radius: 20px; padding: 22px 18px; width: 100%; color: white;
+  }
+  .flow-section h2 {
+    font-size: 16px; font-weight: 700; text-align: center;
+    margin-bottom: 18px; color: #93c5fd;
+  }
+  .flow-row {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .flow-card { text-align: center; flex: 1; }
+  .flow-icon-circle {
+    width: 52px; height: 52px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 22px; margin: 0 auto 6px;
+  }
+  .flow-card h4 { font-size: 12px; font-weight: 700; margin-bottom: 2px; }
+  .flow-card p { font-size: 10px; color: #93c5fd; font-weight: 500; }
+  .flow-arrow { font-size: 22px; color: #38bdf8; font-weight: 900; flex-shrink: 0; }
+
+  /* FEATURES */
+  .features-title {
+    font-size: 18px; font-weight: 800; color: #0c2d57; text-align: center;
+  }
+  .feature-card { text-align: center; }
+  .feature-card .feature-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 20px; margin-bottom: 8px;
+  }
+  .feature-card h4 { font-size: 13px; font-weight: 700; color: #0c2d57; margin-bottom: 4px; }
+  .feature-check {
+    font-size: 11px; color: #059669; font-weight: 500;
+    display: flex; align-items: center; gap: 4px; justify-content: center;
+  }
+  .feature-check::before { content: '✓'; font-weight: 800; color: #10b981; }
+
+  /* STATUS BAR */
+  .status-bar { width: 100%; text-align: center; }
+  .status-bar h3 {
+    font-size: 14px; font-weight: 700; color: #64748b;
+    margin-bottom: 12px; letter-spacing: 0.5px;
+  }
+  .status-row { display: flex; gap: 16px; justify-content: center; }
+  .status-item {
+    display: flex; align-items: center; gap: 8px;
+    background: white; padding: 10px 18px; border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06); border: 1px solid rgba(0,0,0,0.04);
+  }
+  .status-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: #10b981; box-shadow: 0 0 8px rgba(16,185,129,0.5);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
+  .status-item strong { font-size: 12px; color: #059669; font-weight: 700; }
+  .status-item span { font-size: 10px; color: #94a3b8; font-weight: 500; }
+
+  .footer {
+    font-size: 11px; color: #94a3b8; text-align: center;
+    font-weight: 500; padding: 8px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- TITLE -->
+  <div class="main-title">
+    <h1>Arquitectura del Sistema</h1>
+    <div class="subtitle">☁️ SIVICO23 · Parroquia 23 de Enero · Caracas, Venezuela</div>
+  </div>
+
+  <!-- ═══════════ TIER 1: CLOUD DEPLOYMENT ═══════════ -->
+  <div class="card-row-2">
+    <div class="card">
+      <div class="card-icon bg-render icon-white">🌐</div>
+      <h3>Render</h3>
+      <div class="detail">Backend Hosting (Free Tier)</div>
+      <div class="tech">Node.js · Auto-deploy · Cold Start</div>
+    </div>
+    <div class="card">
+      <div class="card-icon bg-emerald icon-white">⚡</div>
+      <h3>Supabase</h3>
+      <div class="detail">PostgreSQL Cloud</div>
+      <div class="tech">Pooler · SSL · AWS us-east-2</div>
+    </div>
+  </div>
+
+  <!-- ARROW -->
+  <div class="arrow">
+    <div class="arrow-line"></div>
+    <div class="arrow-head"></div>
+  </div>
+
+  <!-- ═══════════ TIER 2: FRONTEND ═══════════ -->
+  <div class="section-border">
+    <div class="card" style="margin-bottom: 14px;">
+      <div class="card-icon bg-blue icon-white">📱</div>
+      <h3>App Móvil SIVICO23</h3>
+      <div class="detail">React Native 0.81.5 · Expo SDK 54</div>
+      <div class="tech">AsyncStorage (Offline-First) · Axios · Formik/Yup</div>
+    </div>
+
+    <div class="card-row-4">
+      <div class="card" style="padding: 12px 8px;">
+        <div style="font-size: 22px; margin-bottom: 4px;">🔐</div>
+        <h3 style="font-size: 12px;">Login</h3>
+        <div class="detail" style="font-size: 10px;">JWT Auth · 3 Roles</div>
+      </div>
+      <div class="card" style="padding: 12px 8px;">
+        <div style="font-size: 22px; margin-bottom: 4px;">📋</div>
+        <h3 style="font-size: 12px;">Registro</h3>
+        <div class="detail" style="font-size: 10px;">Multi-Patología · CIE-10</div>
+      </div>
+      <div class="card" style="padding: 12px 8px;">
+        <div style="font-size: 22px; margin-bottom: 4px;">📊</div>
+        <h3 style="font-size: 12px;">Dashboard</h3>
+        <div class="detail" style="font-size: 10px;">KPIs · Gráficos · ErrorBoundary</div>
+      </div>
+      <div class="card" style="padding: 12px 8px;">
+        <div style="font-size: 22px; margin-bottom: 4px;">🗺️</div>
+        <h3 style="font-size: 12px;">Mapa Calor</h3>
+        <div class="detail" style="font-size: 10px;">Imagen Interactiva · 14 Sectores</div>
+      </div>
+    </div>
+
+    <div class="card-row-4" style="margin-top: 10px;">
+      <div class="card" style="padding: 12px 8px;">
+        <div style="font-size: 22px; margin-bottom: 4px;">🚨</div>
+        <h3 style="font-size: 12px;">Emergencias</h3>
+        <div class="detail" style="font-size: 10px;">SOS · GPS · Urgencias</div>
+      </div>
+      <div class="card" style="padding: 12px 8px;">
+        <div style="font-size: 22px; margin-bottom: 4px;">💉</div>
+        <h3 style="font-size: 12px;">Vacunación PAI</h3>
+        <div class="detail" style="font-size: 10px;">19 Vacunas MPPS</div>
+      </div>
+      <div class="card" style="padding: 12px 8px;">
+        <div style="font-size: 22px; margin-bottom: 4px;">📖</div>
+        <h3 style="font-size: 12px;">Historial</h3>
+        <div class="detail" style="font-size: 10px;">Expediente Completo</div>
+      </div>
+      <div class="card" style="padding: 12px 8px;">
+        <div style="font-size: 22px; margin-bottom: 4px;">♿</div>
+        <h3 style="font-size: 12px;">Discapacidad</h3>
+        <div class="detail" style="font-size: 10px;">CONAPDIS · 8 Tipos</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ARROW WITH LABEL -->
+  <div class="arrow">
+    <div class="arrow-line"></div>
+    <div class="connector-label">HTTP/JSON · Axios · WiFi/4G</div>
+    <div class="arrow-line"></div>
+    <div class="arrow-head"></div>
+  </div>
+
+  <!-- ═══════════ TIER 3: BACKEND ═══════════ -->
+  <div class="section-border">
+    <div class="card" style="margin-bottom: 14px;">
+      <div class="card-icon bg-green icon-white">🖥️</div>
+      <h3>API REST — Backend SIVICO23</h3>
+      <div class="detail">Node.js 18+ · Express 4.18 · Puerto 3000</div>
+      <div class="tech">sivico23-backend.onrender.com</div>
+    </div>
+
+    <div class="card-row-3">
+      <div class="card" style="padding: 14px 10px;">
+        <div style="font-size: 22px; margin-bottom: 4px;">🛡️</div>
+        <h3 style="font-size: 13px;">Seguridad</h3>
+        <div class="pills">
+          <span class="pill">JWT 7d</span>
+          <span class="pill">bcrypt 10r</span>
+          <span class="pill">Helmet</span>
+          <span class="pill">CORS</span>
+          <span class="pill">Rate Limit</span>
+        </div>
+      </div>
+      <div class="card" style="padding: 14px 10px;">
+        <div style="font-size: 22px; margin-bottom: 4px;">✅</div>
+        <h3 style="font-size: 13px;">Validación</h3>
+        <div class="pills">
+          <span class="pill green">Joi Schemas</span>
+          <span class="pill green">Sanitización</span>
+          <span class="pill green">Normalización</span>
+        </div>
+      </div>
+      <div class="card" style="padding: 14px 10px;">
+        <div style="font-size: 22px; margin-bottom: 4px;">🔌</div>
+        <h3 style="font-size: 13px;">15+ Endpoints</h3>
+        <div class="pills">
+          <span class="pill purple">/auth</span>
+          <span class="pill purple">/pacientes</span>
+          <span class="pill purple">/registros</span>
+          <span class="pill purple">/estadísticas</span>
+          <span class="pill purple">/sync</span>
+          <span class="pill purple">/alertas</span>
+          <span class="pill purple">/jornadas</span>
+          <span class="pill purple">/vacunas</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ARROW WITH LABEL -->
+  <div class="arrow">
+    <div class="arrow-line"></div>
+    <div class="connector-label">SQL · pg Pool · SSL · Connection Pooling</div>
+    <div class="arrow-line"></div>
+    <div class="arrow-head"></div>
+  </div>
+
+  <!-- ═══════════ TIER 4: DATABASE ═══════════ -->
+  <div class="section-border">
+    <div class="card" style="margin-bottom: 14px;">
+      <div class="card-icon bg-teal icon-white">🗄️</div>
+      <h3>PostgreSQL 14+ — Supabase Cloud</h3>
+      <div class="detail">Modelo 3FN · 15+ Tablas · 20 Índices</div>
+      <div class="tech">aws-1-us-east-2.pooler.supabase.com · Triggers · Auditoría</div>
+    </div>
+
+    <div class="card-row-3">
+      <div class="card" style="padding: 14px 10px;">
+        <div style="font-size: 22px; margin-bottom: 4px;">🏷️</div>
+        <h3 style="font-size: 13px;">Catálogos</h3>
+        <div class="pills">
+          <span class="pill">roles (3)</span>
+          <span class="pill">categorias_cie10</span>
+          <span class="pill">sectores (14)</span>
+          <span class="pill">patologias_cie10</span>
+          <span class="pill">cat_vacunas_mpps</span>
+          <span class="pill">cat_discapacidades</span>
+        </div>
+      </div>
+      <div class="card" style="padding: 14px 10px;">
+        <div style="font-size: 22px; margin-bottom: 4px;">📂</div>
+        <h3 style="font-size: 13px;">Operacionales</h3>
+        <div class="pills">
+          <span class="pill green">usuarios</span>
+          <span class="pill green">pacientes</span>
+          <span class="pill green">registros</span>
+          <span class="pill green">tratamientos</span>
+          <span class="pill green">medicamentos</span>
+        </div>
+      </div>
+      <div class="card" style="padding: 14px 10px;">
+        <div style="font-size: 22px; margin-bottom: 4px;">⭐</div>
+        <h3 style="font-size: 13px;">Módulos Especiales</h3>
+        <div class="pills">
+          <span class="pill orange">alertas_emergencia</span>
+          <span class="pill orange">registro_vacunacion</span>
+          <span class="pill orange">paciente_discapacidades</span>
+          <span class="pill orange">jornadas_salud</span>
+          <span class="pill orange">notificaciones</span>
+          <span class="pill orange">auditoria_pacientes</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ FLOW SECTION ═══════════ -->
+  <div class="flow-section">
+    <h2>🔄 Flujo de Datos — Registro de Paciente</h2>
+    <div class="flow-row">
+      <div class="flow-card">
+        <div class="flow-icon-circle bg-blue">📋</div>
+        <h4>Registro</h4>
+        <p>App Móvil (Expo)</p>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-card">
+        <div class="flow-icon-circle bg-green">⚙️</div>
+        <h4>Validar</h4>
+        <p>Joi · Sanitizar</p>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-card">
+        <div class="flow-icon-circle bg-purple">🔐</div>
+        <h4>Autenticar</h4>
+        <p>JWT · 3 Roles</p>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-card">
+        <div class="flow-icon-circle bg-teal">💾</div>
+        <h4>Persistir</h4>
+        <p>Supabase · PostgreSQL</p>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-card">
+        <div class="flow-icon-circle bg-orange">📊</div>
+        <h4>Dashboard</h4>
+        <p>KPIs · Mapas</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ FEATURES ═══════════ -->
+  <div class="features-title">Características Principales</div>
+
+  <div class="card-row-4">
+    <div class="card feature-card">
+      <div class="feature-icon" style="background: rgba(59,130,246,0.1);">🏥</div>
+      <h4>Dashboard KPIs</h4>
+      <div class="feature-check">Estadísticas en tiempo real</div>
+      <div class="feature-check">Gráficos por sector</div>
+    </div>
+    <div class="card feature-card">
+      <div class="feature-icon" style="background: rgba(5,150,105,0.1);">🗺️</div>
+      <h4>Mapa Interactivo</h4>
+      <div class="feature-check">Imagen con overlay</div>
+      <div class="feature-check">14 Sectores del 23E</div>
+    </div>
+    <div class="card feature-card">
+      <div class="feature-icon" style="background: rgba(124,58,237,0.1);">💊</div>
+      <h4>Catálogo Médico</h4>
+      <div class="feature-check">11,000+ Patologías CIE-10</div>
+      <div class="feature-check">300+ Medicamentos</div>
+    </div>
+    <div class="card feature-card">
+      <div class="feature-icon" style="background: rgba(217,119,6,0.1);">🔄</div>
+      <h4>Sincronización</h4>
+      <div class="feature-check">Offline-First</div>
+      <div class="feature-check">Sync bajo demanda</div>
+    </div>
+  </div>
+
+  <!-- ═══════════ STATUS BAR ═══════════ -->
+  <div class="status-bar">
+    <h3>Status de Conexiones en Producción</h3>
+    <div class="status-row">
+      <div class="status-item">
+        <div class="status-dot"></div>
+        <div>
+          <strong>Render activo</strong><br>
+          <span>Backend desplegado · Free Tier</span>
+        </div>
+      </div>
+      <div class="status-item">
+        <div class="status-dot"></div>
+        <div>
+          <strong>Supabase conectado</strong><br>
+          <span>PostgreSQL · AWS us-east-2</span>
+        </div>
+      </div>
+      <div class="status-item">
+        <div class="status-dot"></div>
+        <div>
+          <strong>APK Producción</strong><br>
+          <span>EAS Build · expo-updates</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    SIVICO23 v3.1 · Sistema Integral de Vigilancia Comunitaria en Salud · TSU Informática · IUTEPAL/UPTAEB · 2026<br>
+    React Native 0.81.5 · Node.js 18+ · Express 4.18 · PostgreSQL 14+ · Supabase · Render · Expo SDK 54
+  </div>
+
+</div>
+</body>
+</html>

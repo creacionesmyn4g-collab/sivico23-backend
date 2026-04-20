@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía de Instalación - SIVICO23</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1E3A8A; /* Azul profundo */
+            --secondary: #0EA5E9; /* Cian */
+            --accent: #F59E0B; /* Naranja */
+            --success: #10B981; /* Verde */
+            --dark: #0F172A;
+            --light: #F8FAFC;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: #fff;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+        .header {
+            text-align: center;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 60px 20px;
+            border-radius: 20px;
+            margin-bottom: 40px;
+            box-shadow: 0 15px 25px rgba(14, 165, 233, 0.2);
+        }
+        .header h1 {
+            font-size: 3rem;
+            margin: 0 0 10px 0;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin: 0;
+        }
+        .step-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-left: 8px solid var(--secondary);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02), 0 10px 15px rgba(0,0,0,0.03);
+            transition: transform 0.3s ease;
+        }
+        .step-card:hover {
+            transform: translateY(-5px);
+        }
+        .step-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .step-number {
+            background: var(--primary);
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-right: 20px;
+            box-shadow: 0 4px 10px rgba(30, 58, 138, 0.3);
+        }
+        .step-title {
+            font-size: 1.6rem;
+            color: var(--primary);
+            margin: 0;
+            font-weight: 600;
+        }
+        .code-block {
+            background: var(--dark);
+            color: #E2E8F0;
+            padding: 20px;
+            border-radius: 12px;
+            font-family: 'Courier New', Courier, monospace;
+            overflow-x: auto;
+            margin: 15px 0;
+            border: 1px solid #334155;
+        }
+        .alert {
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            display: flex;
+            align-items: flex-start;
+        }
+        .alert-warning {
+            background-color: #FEF3C7;
+            color: #92400E;
+            border-left: 6px solid var(--accent);
+        }
+        .alert-success {
+            background-color: #D1FAE5;
+            color: #065F46;
+            border-left: 6px solid var(--success);
+        }
+        .alert i {
+            font-size: 1.5rem;
+            margin-right: 15px;
+            margin-top: 2px;
+        }
+        ul {
+            list-style: none;
+            padding-left: 10px;
+        }
+        ul li {
+            position: relative;
+            padding-left: 30px;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+        ul li::before {
+            content: '\f00c';
+            font-family: 'FontAwesome';
+            position: absolute;
+            left: 0;
+            color: var(--success);
+            font-size: 1.2rem;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 60px;
+            padding-top: 30px;
+            border-top: 2px dashed #E2E8F0;
+            color: #64748B;
+        }
+        .badge {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <i class="fa-solid fa-mobile-screen-button" style="font-size: 4rem; opacity: 0.8; margin-bottom: 15px;"></i>
+            <h1>Guía de Instalación</h1>
+            <p>SIVICO23 - Sistema Integral de Vigilancia Comunitaria</p>
+            <div class="badge">Aprobado para Voceros de Salud</div>
+        </header>
+
+        <div class="alert alert-warning">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <div>
+                <strong>Nota Socio-Tecnológica:</strong> Esta guía está diseñada paso a paso para que cualquier miembro de la comunidad con conocimientos básicos de informática pueda levantar el sistema localmente en su Ambulatorio o Base de Misiones.
+            </div>
+        </div>
+
+        <div class="step-card">
+            <div class="step-header">
+                <div class="step-number">1</div>
+                <h2 class="step-title">Requisitos Previos</h2>
+            </div>
+            <p>Prepare el entorno antes de instalar SIVICO23. Es importante tener instaladas las herramientas correctas para evitar problemas al iniciar el backend y el frontend.</p>
+            <ul>
+                <li><strong>Node.js 18+ y npm 9+.</strong></li>
+                <li><strong>Expo CLI:</strong> <code>npm install -g expo-cli</code>.</li>
+                <li><strong>Git:</strong> clonar el repositorio completo.</li>
+                <li><strong>Base de datos PostgreSQL / Supabase:</strong> crear el proyecto y obtener la URL de conexión.</li>
+            </ul>
+        </div>
+
+        <div class="step-card" style="border-left-color: var(--primary);">
+            <div class="step-header">
+                <div class="step-number" style="background: var(--primary);">2</div>
+                <h2 class="step-title">Instalar y Configurar el Backend</h2>
+            </div>
+            <p>Desde la carpeta <code>backend</code>, instale dependencias y configure la conexión a PostgreSQL.</p>
+            <div class="code-block">
+cd backend<br>
+npm install
+            </div>
+            <p>Luego cree un archivo <code>.env</code> con al menos estas variables:</p>
+            <div class="code-block">
+DATABASE_URL=postgresql://usuario:clave@host:puerto/base<br>
+JWT_SECRET=una_clave_segura
+            </div>
+            <p>Opcionalmente puede usar variables individuales si no utiliza <code>DATABASE_URL</code>:</p>
+            <div class="code-block">
+DB_HOST=localhost<br>
+DB_PORT=5432<br>
+DB_USER=sivico23_user<br>
+DB_PASSWORD=sivico23_password<br>
+DB_NAME=sivico23_db
+            </div>
+            <p>Arranque el backend con:</p>
+            <div class="code-block">
+npm run dev
+            </div>
+        </div>
+
+        <div class="step-card" style="border-left-color: var(--primary);">
+            <div class="step-header">
+                <div class="step-number" style="background: var(--primary);">3</div>
+                <h2 class="step-title">Configurar el Punto de Acceso (Frontend)</h2>
+            </div>
+            <p>Antes de compilar la App, debe indicar la URL de su backend y asegurarse de tener instaladas las dependencias del frontend.</p>
+            <div class="code-block">
+cd frontend<br>
+npm install
+            </div>
+            <p>Luego abra <code>frontend/src/utils/constants.js</code> y actualice la variable <code>API_BASE_URL</code>.</p>
+            <div class="code-block">
+// Para un servidor en la nube<br>
+export const API_BASE_URL = 'https://sivico23-backend.onrender.com';
+            </div>
+            <div class="code-block">
+// Para pruebas en red local Android<br>
+export const API_BASE_URL = 'http://192.168.x.x:3000';
+            </div>
+        </div>
+
+        <div class="step-card" style="border-left-color: var(--success);">
+            <div class="step-header">
+                <div class="step-number" style="background: var(--success);">4</div>
+                <h2 class="step-title">Compilar el APK (EAS Build)</h2>
+            </div>
+            <p>Para generar el archivo instalable para los teléfonos de los voceros, usamos <strong>Expo Application Services (EAS)</strong>:</p>
+            <div class="code-block">
+cd frontend<br>
+npx eas build --platform android --profile apk
+            </div>
+            <p>Esto generará un enlace de descarga seguro para el archivo <code>.apk</code> listo para instalar.</p>
+        </div>
+
+        <div class="step-card" style="border-left-color: var(--accent);">
+            <div class="step-header">
+                <div class="step-number" style="background: var(--accent);">5</div>
+                <h2 class="step-title">Desarrollo Local y Pruebas</h2>
+            </div>
+            <p>Si desea hacer cambios rápidos o pruebas sin internet, puede usar el servidor local con el túnel de Expo:</p>
+            <div class="code-block">
+npx expo start --tunnel
+            </div>
+            <p>Escanee el código QR con la app <strong>Expo Go</strong> en su teléfono.</p>
+        </div>
+
+        <div class="step-card" style="border-left-color: #10B981;">
+            <div class="step-header">
+                <div class="step-number" style="background: #10B981;">6</div>
+                <h2 class="step-title">Verificación y Cuentas Iniciales</h2>
+            </div>
+            <p>Compruebe que el backend y el frontend se hayan conectado correctamente con estos pasos:</p>
+            <ul>
+                <li>Abra el navegador en <code>http://localhost:3000/api/health</code> para verificar el backend.</li>
+                <li>Use cuentas preconfiguradas para pruebas: <code>admin@sivico23.ve</code>, <code>vocero@sivico23.ve</code> y <code>medico@sivico23.ve</code>.</li>
+                <li>Valide que los datos de sectores, pacientes y registros se sincronizan desde la app móvil.</li>
+            </ul>
+        </div>
+
+        <div class="alert alert-success">
+            <i class="fa-solid fa-check-circle"></i>
+            <div>
+                <strong>¡Misión Cumplida!</strong> SIVICO23 v3.1 ya está operando bajo estándares de soberanía tecnológica y alta disponibilidad.
+            </div>
+        </div>
+
+        <footer class="footer">
+            <p><strong>Guía de Instalación SIVICO23 v3.1</strong> - Parroquia 23 de Enero</p>
+            <p>Uniendo tecnología moderna con acción comunitaria consciente.</p>
+        </footer>
+    </div>
+</body>
+</html>

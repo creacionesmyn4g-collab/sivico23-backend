@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Defensa Técnica SIVICO23</title>
+    <style>
+        :root {
+            --bg: #0b1120;
+            --surface: #121b2b;
+            --surface-2: #1f2a44;
+            --primary: #58a6ff;
+            --accent: #7c3aed;
+            --success: #22c55e;
+            --warn: #f59e0b;
+            --text: #e2e8f0;
+            --text-muted: #94a3b8;
+            --border: rgba(148, 163, 184, 0.2);
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: radial-gradient(circle at top, rgba(40, 99, 255, 0.16), transparent 35%),
+                        linear-gradient(180deg, #0f172a 0%, #111827 100%);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        .page {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 18px 80px;
+        }
+        header {
+            padding: 30px 24px;
+            border-radius: 32px;
+            background: rgba(15, 23, 42, 0.96);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            margin-bottom: 30px;
+        }
+        header h1 { margin: 0; font-size: clamp(2rem, 3vw, 3rem); letter-spacing: -0.04em; }
+        header p { margin: 16px 0 0; color: var(--text-muted); font-size: 1rem; }
+        .tagline { display: inline-flex; align-items: center; gap: 10px; margin-top: 18px; padding: 10px 16px; background: rgba(56, 189, 248, 0.12); border-radius: 999px; color: #dbeafe; font-weight: 600; }
+        .section { margin-bottom: 40px; }
+        .section h2 { font-size: 1.8rem; margin-bottom: 14px; color: #eff6ff; }
+        .section h3 { font-size: 1.2rem; margin: 24px 0 12px; color: #cbd5e1; }
+        .card { background: var(--surface); border: 1px solid var(--border); border-radius: 24px; padding: 26px; box-shadow: 0 20px 80px rgba(0, 0, 0, 0.18); }
+        .grid { display: grid; gap: 18px; }
+        .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .card p, .card li, .card code { color: var(--text-muted); }
+        ul { padding-left: 20px; margin: 0; }
+        li { margin-bottom: 12px; }
+        code { display: block; white-space: pre-wrap; background: rgba(148, 163, 184, 0.12); color: #cbd5e1; padding: 14px 16px; border-radius: 16px; margin: 12px 0; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+        .badge { display: inline-flex; padding: 8px 14px; border-radius: 999px; font-size: 0.9rem; font-weight: 700; background: rgba(56, 189, 248, 0.14); color: #bfdbfe; }
+        .pill { display: inline-flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+        .pill span { background: rgba(167, 139, 250, 0.14); color: #e0e7ff; padding: 8px 12px; border-radius: 999px; font-size: 0.95rem; }
+        .quote { border-left: 3px solid var(--primary); padding-left: 18px; color: #cbd5e1; margin: 22px 0; }
+        .highlight { color: #a5f3fc; font-weight: 700; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 14px 16px; border-bottom: 1px solid rgba(148, 163, 184, 0.18); }
+        th { text-align: left; color: #e2e8f0; background: rgba(88, 165, 255, 0.08); }
+        tr:hover td { background: rgba(255, 255, 255, 0.04); }
+        .footer { margin-top: 60px; text-align: center; color: var(--text-muted); font-size: 0.95rem; }
+        @media (max-width: 900px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <header>
+            <h1>Guía de Defensa Técnica - SIVICO23</h1>
+            <p>Documento de apoyo para la exposición oral y técnica de la aplicación de vigilancia sociocomunitaria.</p>
+            <div class="tagline">Esta guía explica el idioma del código, los comandos usados, las decisiones tecnológicas y las respuestas que el jurado espera.</div>
+        </header>
+
+        <section class="section card">
+            <h2>1. Tecnologías principales</h2>
+            <div class="grid grid-2">
+                <div>
+                    <h3>Frontend</h3>
+                    <p>SIVICO23 usa <strong>React Native</strong> con <strong>Expo</strong> para la app móvil. No se usó Java puro porque React Native permite un solo código base para Android e iOS, y reduce tiempo de desarrollo para el equipo.</p>
+                    <p><strong>Ventajas:</strong></p>
+                    <ul>
+                        <li>Multiplataforma con un solo proyecto.</li>
+                        <li>Actualizaciones más rápidas.</li>
+                        <li>Expo facilita pruebas en dispositivos reales sin compilar APKs cada vez.</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Backend</h3>
+                    <p>El servidor se implementó en <strong>Node.js</strong> usando <strong>Express</strong>. Esto permite APIs REST ligeras y alto rendimiento con pocas líneas de código.</p>
+                    <p><strong>Por qué Node.js:</strong></p>
+                    <ul>
+                        <li>Asincronía nativa con <code>async/await</code> para consultas de base de datos.</li>
+                        <li>Gran ecosistema de librerías.</li>
+                        <li>Es el lenguaje de la web, ideal para conectar la app móvil con PostgreSQL.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="section card">
+            <h2>2. Comandos clave y su razón</h2>
+            <div class="grid grid-2">
+                <div>
+                    <h3>Backend</h3>
+                    <ul>
+                        <li><code>cd backend</code> — Moverse al proyecto del servidor.</li>
+                        <li><code>npm install</code> — Instala dependencias Node.js necesarias.</li>
+                        <li><code>npm run dev</code> — Inicia el servidor con <strong>nodemon</strong> para recarga automática durante el desarrollo.</li>
+                        <li><code>npm start</code> — Inicia el backend en modo producción.</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Frontend</h3>
+                    <ul>
+                        <li><code>cd frontend</code> — Cambia al proyecto de la app móvil.</li>
+                        <li><code>npm install</code> — Instala librerías de React Native y Expo.</li>
+                        <li><code>npx expo start</code> — Arranca el servidor de desarrollo Expo.</li>
+                        <li><code>npx expo start --tunnel</code> — Permite conectar teléfonos reales aunque el backend esté en la PC.</li>
+                        <li><code>npx eas build --platform android --profile apk</code> — Genera un APK instalable para pruebas de campo.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="section card">
+            <h2>3. Lenguajes usados y por qué</h2>
+            <div class="grid grid-3">
+                <div>
+                    <span class="badge">JavaScript</span>
+                    <p>Lenguaje único para el frontend y backend. Facilita la integración de datos y la lógica compartida.</p>
+                </div>
+                <div>
+                    <span class="badge">React Native</span>
+                    <p>Framework que compila a componentes nativos de Android e iOS sin escribir Java/Kotlin.</p>
+                </div>
+                <div>
+                    <span class="badge">SQL</span>
+                    <p>Usado en PostgreSQL para definir el esquema, consultas, índices y vistas del sistema de salud.</p>
+                </div>
+            </div>
+            <div class="quote">React Native se eligió porque el proyecto requiere vigilancia comunitaria móvil con disponibilidad rápida en múltiples dispositivos Android, y Expo reduce tiempos de despliegue frente a Java nativo.</div>
+        </section>
+
+        <section class="section card">
+            <h2>4. Librerías y su propósito</h2>
+            <div class="grid grid-2">
+                <div>
+                    <h3>Frontend</h3>
+                    <ul>
+                        <li><strong>@expo/vector-icons</strong> — Iconografía consistente y ligera.</li>
+                        <li><strong>@react-native-async-storage/async-storage</strong> — Guarda datos locales para funcionar sin internet.</li>
+                        <li><strong>axios</strong> — Cliente HTTP para todas las llamadas a la API.</li>
+                        <li><strong>formik + yup</strong> — Manejo y validación de formularios médicos.</li>
+                        <li><strong>react-native-maps</strong> — Muestra sectores georreferenciados en el mapa.</li>
+                        <li><strong>react-native-chart-kit</strong> — Genera gráficos de seguimiento y reportes.</li>
+                        <li><strong>react-native-paper</strong> — Componentes UI modernos y accesibles.</li>
+                        <li><strong>expo-location</strong> — Captura GPS para alertas SOS.</li>
+                        <li><strong>expo-print</strong> / <strong>expo-sharing</strong> — Exporta reportes e información desde la app.</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Backend</h3>
+                    <ul>
+                        <li><strong>express</strong> — Crea la API REST del servidor.</li>
+                        <li><strong>pg</strong> — Conecta y consulta PostgreSQL.</li>
+                        <li><strong>dotenv</strong> — Carga variables de configuración desde <code>.env</code>.</li>
+                        <li><strong>bcrypt</strong> — Hashea contraseñas con seguridad robusta.</li>
+                        <li><strong>jsonwebtoken</strong> — Emite y valida tokens JWT para autenticación.</li>
+                        <li><strong>cors</strong> — Permite seguridad en el intercambio de datos entre app y servidor.</li>
+                        <li><strong>helmet</strong> — Refuerza cabeceras HTTP contra ataques comunes.</li>
+                        <li><strong>express-rate-limit</strong> — Protege login y API contra abusos de solicitudes.
+                        <li><strong>joi</strong> — Valida datos de entrada en las rutas.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="section card">
+            <h2>5. Base de datos usada y su justificación</h2>
+            <p>La base de datos es <strong>PostgreSQL</strong>, version 16 compatible. Se eligió por su robustez, soporte para integridad referencial y cumplimiento con esquemas sanitarios donde los datos deben ser consistentes.</p>
+            <div class="grid grid-2">
+                <div>
+                    <h3>Por qué PostgreSQL</h3>
+                    <ul>
+                        <li>Mejor integridad relacional y transaccional.</li>
+                        <li>Soporte para <code>JSONB</code> y funciones avanzadas.</li>
+                        <li>Seguridad y estabilidad para aplicaciones críticas.</li>
+                        <li>Más adecuado que MySQL para datos clínicos normalizados.</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Esquema real</h3>
+                    <p>El proyecto usa <strong>17 tablas</strong>, incluyendo:</p>
+                    <div class="pill">
+                        <span>roles</span><span>usuarios</span><span>pacientes</span><span>registros</span><span>tratamientos</span><span>medicamentos</span>
+                        <span>categorias_cie10</span><span>patologias_cie10</span><span>cat_vacunas_mpps</span><span>registro_vacunacion</span>
+                        <span>cat_discapacidades</span><span>paciente_discapacidades</span><span>alertas_emergencia</span><span>jornadas_salud</span><span>notificaciones_usuarios</span><span>auditoria_pacientes</span>
+                    </div>
+                </div>
+            </div>
+            <h3>Sentencias SQL clave</h3>
+            <table>
+                <thead>
+                    <tr><th>Sentencia</th><th>Propósito</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>CREATE TABLE usuarios (... rol_id INTEGER REFERENCES roles(id) ...)</code></td><td>Define la relación entre usuario y rol para control de permisos.</td></tr>
+                    <tr><td><code>CREATE TABLE pacientes (... sector_id INTEGER REFERENCES sectores(id) ...)</code></td><td>Vincula paciente a territorio geográfico.</td></tr>
+                    <tr><td><code>CREATE TABLE tratamientos (... registro_id INTEGER REFERENCES registros(id) ... patologia_id INTEGER REFERENCES patologias_cie10(id))</code></td><td>Normaliza diagnósticos y evita repetir datos médicos.</td></tr>
+                    <tr><td><code>CREATE VIEW vista_registros_completos AS SELECT ...</code></td><td>Genera reporte de consulta con datos combinados para dashboard.</td></tr>
+                    <tr><td><code>CREATE TRIGGER trg_auditar_pacientes AFTER INSERT OR UPDATE OR DELETE ON pacientes</code></td><td>Registra cambios históricos para trazabilidad forense.</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section class="section card">
+            <h2>6. Variables importantes y archivos</h2>
+            <div class="grid grid-2">
+                <div>
+                    <h3>Variables de entorno</h3>
+                    <code>DATABASE_URL=postgresql://usuario:clave@host:puerto/base</code>
+                    <code>JWT_SECRET=una_clave_segura</code>
+                    <code>DB_HOST=localhost</code>
+                    <code>DB_PORT=5432</code>
+                    <code>DB_USER=sivico23_user</code>
+                    <code>DB_PASSWORD=sivico23_password</code>
+                    <code>DB_NAME=sivico23_db</code>
+                </div>
+                <div>
+                    <h3>Archivos clave</h3>
+                    <ul>
+                        <li><code>frontend/App.js</code> — Punto de entrada de la app móvil.</li>
+                        <li><code>frontend/src/utils/constants.js</code> — URL del backend y rutas de API.</li>
+                        <li><code>backend/server.js</code> — API REST principal y lógica de autenticación.</li>
+                        <li><code>backend/database.sql</code> — Esquema completo de la base de datos.</li>
+                        <li><code>backend/scripts/seed_admin.js</code> — Genera usuario administrador.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="section card">
+            <h2>7. Palabras usadas en la programación y su significado</h2>
+            <div class="grid grid-2">
+                <div>
+                    <h3>Conceptos Frontend</h3>
+                    <ul>
+                        <li><strong>API_BASE_URL</strong>: dirección del servidor donde se hacen las peticiones.</li>
+                        <li><strong>AsyncStorage</strong>: memoria local del teléfono para datos offline.</li>
+                        <li><strong>axios</strong>: biblioteca para hacer <code>GET</code>, <code>POST</code>, <code>PUT</code>, <code>DELETE</code>.</li>
+                        <li><strong>formik</strong>: gestiona formularios y envíos.</li>
+                        <li><strong>yup</strong>: valida datos antes de enviarlos al servidor.</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Conceptos Backend</h3>
+                    <ul>
+                        <li><strong>express.json()</strong>: convierte JSON de la petición en objeto JavaScript.</li>
+                        <li><strong>jwt.verify()</strong>: valida tokens para autorizar solicitudes.</li>
+                        <li><strong>bcrypt.hash()</strong>: genera hash seguro de contraseñas.</li>
+                        <li><strong>pool.query()</strong>: ejecuta consultas SQL con el cliente PostgreSQL.</li>
+                        <li><strong>REFERENCES</strong>: fuerza integridad entre tablas relacionadas.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="section card">
+            <h2>8. Ejemplo de programación en React Native</h2>
+            <p>En SIVICO23 el desarrollo móvil se basa en <strong>componentes funcionales</strong> de React, usando <code>useState</code>, <code>useEffect</code> y composición. No se usa herencia clásica; en lugar de eso, se reutilizan componentes y se pasan datos mediante <strong>props</strong>.</p>
+            <div class="card">
+                <h3>Ejemplo de pantalla simple</h3>
+                <code>import React, { useState, useEffect } from 'react';
+import { View, Text, Button, StyleSheet } from 'react-native';
+import axios from 'axios';
+
+export default function RegistroScreen() {
+  const [paciente, setPaciente] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    async function cargarPaciente() {
+      setLoading(true);
+      const respuesta = await axios.get(`${API_BASE_URL}/api/pacientes/123`);
+      setPaciente(respuesta.data);
+      setLoading(false);
+    }
+    cargarPaciente();
+  }, []);
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Registro del Paciente</Text>
+      {loading ? <Text>Cargando...</Text> : <Text>{paciente?.nombre}</Text>}
+      <Button title="Sincronizar" onPress={() => { /* lógica */ }} />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, padding: 16 },
+  title: { fontSize: 24, fontWeight: '700', color: '#fff' },
+});</code>
+                <ul>
+                    <li><strong>useState</strong>: guarda variables locales reactivas como el paciente actual.</li>
+                    <li><strong>useEffect</strong>: carga datos cuando la pantalla se monta.</li>
+                    <li><strong>props</strong>: se usan para pasar funciones y datos entre componentes.</li>
+                    <li><strong>StyleSheet</strong>: agrupa estilos de forma optimizada y nativa.</li>
+                </ul>
+            </div>
+            <h3>Herencia vs composición</h3>
+            <p>React Native no se programa con herencia clásica como en Java. El patrón preferido es <strong>composición</strong>, creando componentes pequeños y combinándolos. Por ejemplo, una tarjeta de paciente se puede reutilizar en <code>RegistroScreen</code> y <code>HistorialScreen</code> sin heredar de una clase base.</p>
+            <div class="quote">La aplicación usa componentes independientes que se combinan, no clases que extienden otras clases. Esto mejora la mantenibilidad y la reutilización.</div>
+            <p>Este enfoque responde a preguntas como:</p>
+            <ul>
+                <li><strong>¿Se usa herencia?</strong> No, se usa composición de componentes.</li>
+                <li><strong>¿Qué palabras clave se utilizaron?</strong> <code>useState</code>, <code>useEffect</code>, <code>props</code>, <code>return</code>, <code>async/await</code>, <code>import</code>, <code>export default</code>.</li>
+                <li><strong>¿Por qué no usar clases?</strong> Las funciones son más sencillas, ocupan menos código y trabajan mejor con hooks, que son el estándar moderno de React.</li>
+            </ul>
+        </section>
+
+        <section class="section card">
+            <h2>9. Preguntas frecuentes del jurado y respuestas</h2>
+            <div class="grid grid-2">
+                <div>
+                    <h3>¿Por qué no Java nativo?</h3>
+                    <p>React Native permite mantener una sola base de código, lo cual es ideal cuando el equipo tiene menor tiempo y se requiere velocidad de entrega. Java nativo implica desarrollar y mantener Android y iOS por separado.</p>
+                </div>
+                <div>
+                    <h3>¿Por qué PostgreSQL?</h3>
+                    <p>Porque ofrece transacciones fuertes, claves foráneas, vistas y triggers. Estas capacidades son críticas para un sistema de salud que necesita integridad y auditoría de datos.</p>
+                </div>
+                <div>
+                    <h3>¿Qué hace el módulo offline?</h3>
+                    <p>Almacena registros en <code>AsyncStorage</code> y los sincroniza cuando hay conexión. Esto permite a los voceros trabajar en zonas sin internet y subir datos desde la base de misiones.</p>
+                </div>
+                <div>
+                    <h3>¿Cómo se asegura la contraseña?</h3>
+                    <p>Se usa <code>bcrypt</code> con 10 rondas de hash. Las contraseñas nunca se guardan en texto plano y se comparan con <code>bcrypt.compare()</code>.</p>
+                </div>
+                <div>
+                    <h3>¿Qué es 3FN?</h3>
+                    <p>La Tercera Forma Normal es una técnica para eliminar redundancias. En SIVICO23 se separan datos de pacientes, usuarios, sectores, patologías, vacunas y notificaciones en tablas diferentes.</p>
+                </div>
+                <div>
+                    <h3>¿Qué archivos debe revisar el jurado?</h3>
+                    <ul>
+                        <li><code>backend/database.sql</code> — Esquema y triggers.</li>
+                        <li><code>backend/server.js</code> — Rutas, autenticación y lógica REST.</li>
+                        <li><code>frontend/src/utils/constants.js</code> — Configuración de servicios.</li>
+                        <li><code>frontend/App.js</code> — Flujo de navegación y arranque.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <p>Documento creado para la defensa técnica de SIVICO23. Presenta las decisiones de implementación, los comandos usados y la arquitectura tecnológica del proyecto.</p>
+        </footer>
+    </div>
+</body>
+</html>

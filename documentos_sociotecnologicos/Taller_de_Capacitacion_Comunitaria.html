@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desarrollo Integral: Taller de Capacitación - SIVICO23</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #8B5CF6; /* Púrpura */
+            --secondary: #6D28D9;
+            --accent: #F59E0B; /* Naranja */
+            --dark: #1E293B;
+            --light: #F8FAFC;
+            --text-muted: #64748B;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.7;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: #fff;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.06);
+            border-radius: 12px;
+        }
+        .header {
+            text-align: center;
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            color: white;
+            padding: 60px 30px;
+            border-radius: 20px;
+            margin-bottom: 50px;
+            box-shadow: 0 15px 30px rgba(139, 92, 246, 0.25);
+        }
+        .header h1 {
+            font-size: 2.8rem;
+            margin: 0 0 15px 0;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+        
+        .module-card {
+            border: 1px solid #E2E8F0;
+            border-radius: 16px;
+            margin-bottom: 40px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        }
+        .module-header {
+            background: #F1F5F9;
+            padding: 25px 30px;
+            border-bottom: 2px solid #E2E8F0;
+            position: relative;
+        }
+        .module-header h2 {
+            margin: 0;
+            font-size: 1.7rem;
+            color: var(--secondary);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .module-header p {
+            margin: 8px 0 0 0;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        .target-badge {
+            position: absolute;
+            top: 25px;
+            right: 30px;
+            background: #EDE9FE;
+            color: var(--secondary);
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            box-shadow: 0 2px 5px rgba(109, 40, 217, 0.1);
+        }
+        
+        .module-content {
+            padding: 35px 30px;
+        }
+        
+        /* Desarrollo Didáctico */
+        .didactic-section {
+            margin-bottom: 30px;
+        }
+        .didactic-title {
+            font-size: 1.25rem;
+            color: var(--dark);
+            margin-bottom: 15px;
+            border-left: 4px solid var(--primary);
+            padding-left: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .script-box {
+            background: #F8FAFC;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px dashed #CBD5E1;
+            margin-bottom: 20px;
+            font-style: italic;
+            color: #475569;
+        }
+        .script-box::before {
+            content: 'Guion del Facilitador:';
+            display: block;
+            font-weight: 700;
+            font-style: normal;
+            color: var(--secondary);
+            margin-bottom: 8px;
+        }
+        
+        .activity-box {
+            background: #EFF6FF;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .activity-box h4 {
+            color: #1D4ED8;
+            margin: 0 0 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        ul.check-list {
+            list-style: none;
+            padding-left: 0;
+        }
+        ul.check-list li {
+            position: relative;
+            padding-left: 30px;
+            margin-bottom: 12px;
+        }
+        ul.check-list li::before {
+            content: '\f058';
+            font-family: 'FontAwesome';
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-size: 1.2rem;
+        }
+
+        .divider {
+            height: 2px;
+            background: #E2E8F0;
+            margin: 40px 0;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <i class="fa-solid fa-chalkboard-user" style="font-size: 4rem; margin-bottom: 20px;"></i>
+            <h1>Manual del Facilitador: Taller SIVICO23</h1>
+            <p>Guía de Desarrollo Teórico-Práctico para la Capacitación en la Parroquia 23 de Enero</p>
+        </header>
+
+        <p style="font-size: 1.15rem; text-align: center; color: var(--text-muted); margin-bottom: 50px;">
+            Este documento contiene el <strong>desarrollo paso a paso</strong> de las clases a impartir. Otorga al facilitador (estudiante TSU) los guiones, dinámicas prácticas y objetivos evaluativos necesarios para enseñar el uso de la app a la comunidad.
+        </p>
+
+        <!-- ================= MÓDULO I ================= -->
+        <div class="module-card">
+            <div class="module-header">
+                <h2><i class="fa-solid fa-hands-holding-circle"></i> Módulo I: Sensibilización y Propósito</h2>
+                <p>Duración: 45 Minutos | Modalidad: Conversatorio Teórico</p>
+                <span class="target-badge">Toda la Comunidad</span>
+            </div>
+            
+            <div class="module-content">
+                <div class="didactic-section">
+                    <h3 class="didactic-title"><i class="fa-solid fa-bullseye"></i> Objetivo del Módulo</h3>
+                    <p>Que la comunidad comprenda por qué estamos migrando de las libretas de papel a un sistema digital moderno y soberano, y cómo SIVICO23 ayudará a gestionar mejor las medicinas en la parroquia.</p>
+                </div>
+
+                <div class="didactic-section">
+                    <div class="script-box">
+                        "¡Bienvenidos voceros y médicos! Todos sabemos lo difícil que es hacer el censo de salud de nuestra cuadra usando planillas de papel. Se mojan, se pierden, y cuando pedimos las medicinas a la Alcaldía, tardan meses en tabular la información a mano. Hoy venimos a entregarles <strong>SIVICO23</strong>, una aplicación móvil hecha en nuestra parroquia, que permite guardar la historia médica de cada vecino en su teléfono y generar los gráficos de necesidad real al instante, ¡incluso si no tienen internet en los callejones!"
+                    </div>
+                </div>
+
+                <div class="didactic-section">
+                    <div class="activity-box">
+                        <h4><i class="fa-solid fa-comments"></i> Dinámica Interactiva: "El Teléfono Roto del Papel"</h4>
+                        <p><strong>Instrucciones:</strong> El facilitador muestra una ficha médica arrugada y con mala ortografía. Pide a 3 voluntarios que intenten leer "qué medicina recetó" el médico allí. Tras el fallo colectivo, el facilitador muestra la pantalla "Registro" de la app en un proyector, donde se selecciona la medicina exacta desde un catálogo de 800 patologías CIE-10 (OMS).<br>
+                        <strong>Conclusión a debatir:</strong> Estandarización de datos = Menos errores en la farmacia comunitaria.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= MÓDULO II ================= -->
+        <div class="module-card">
+            <div class="module-header">
+                <h2><i class="fa-solid fa-user-doctor"></i> Módulo II: Práctica Clínica Digital</h2>
+                <p>Duración: 60 Minutos | Modalidad: Taller Práctico con Celulares</p>
+                <span class="target-badge" style="background:#DBEAFE; color:#1D4ED8;">Médicos y Enfermeros</span>
+            </div>
+            
+            <div class="module-content">
+                <div class="didactic-section">
+                    <h3 class="didactic-title"><i class="fa-solid fa-bullseye"></i> Objetivo del Módulo</h3>
+                    <p>Capacitar al personal clínico en el registro ágil de "Pacientes Multimórbidos" (con múltiples enfermedades) utilizando la base de patologías codificadas de la app y la asignación exacta de tratamientos.</p>
+                </div>
+
+                <div class="didactic-section">
+                    <div class="script-box">
+                        "Doctores, su tiempo vale oro. En SIVICO23 rediseñamos la pantalla de Registro para que sea tan rápida como enviar un WhatsApp. Ya no tienen que llenar los datos de los pacientes conocidos, solo tipear su cédula y se autocompletan. Además, en la Fase 2, <strong>pueden diagnosticar varias enfermedades al mismo tiempo</strong> usando las pestañas de colores (Respiratorias, Cardiológicas, etc.) y la app les sugerirá el tratamiento normado por el MPPS automáticamente."
+                    </div>
+                </div>
+
+                <div class="didactic-section">
+                    <div class="activity-box" style="background: #F0FDF4; border-color: #BBF7D0;">
+                        <h4 style="color: #166534;"><i class="fa-solid fa-mobile-screen"></i> Examen Práctico: El Caso "Abuelo José"</h4>
+                        <p><strong>Ejercicio asignado:</strong> Reparta teléfonos con la app instalada. Pida a los participantes que registren un caso ficticio llamado José (V-12345678):</p>
+                        <ul class="check-list">
+                            <li>Ingresar Tensión Arterial: 140/90 (Nivel Triaje: Urgente/Amarillo).</li>
+                            <li>Buscar e ingresar 2 Patologías Simultáneas: <em>Hipertensión Arterial (Cardiovascular)</em> y <em>Gastritis (Gastrointestinal)</em>.</li>
+                            <li>Asociarle Losartán (Tab 50mg) y Omeprazol (20mg).</li>
+                            <li>Darle al botón "Guardar Registro Local".</li>
+                        </ul>
+                        <p><strong>Criterio de éxito:</strong> Quien logre guardar el registro multimórbido y verificarlo en el "Historial", aprueba el módulo.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= MÓDULO III ================= -->
+        <div class="module-card">
+            <div class="module-header">
+                <h2><i class="fa-solid fa-map-location-dot"></i> Módulo III: El Vocero de Salud en Campo</h2>
+                <p>Duración: 60 Minutos | Modalidad: Taller Práctico de Campo</p>
+                <span class="target-badge" style="background:#FEF3C7; color:#B45309;">Voceros y Jefes de Calle</span>
+            </div>
+            
+            <div class="module-content">
+                <div class="didactic-section">
+                    <h3 class="didactic-title"><i class="fa-solid fa-bullseye"></i> Objetivo del Módulo</h3>
+                    <p>Dominar la "Sincronización Offline" (Trabajo sin internet) y el disparo de la "Alerta SOS GPS" ante verdaderas urgencias (infartos, caídas de adultos mayores).</p>
+                </div>
+
+                <div class="didactic-section">
+                    <div class="script-box">
+                        "Voceros, ustedes son los pies del ambulatorio. Sabemos que allá arriba en la cañada no llega Movilnet. La magia tecnológica de SIVICO23 es que su teléfono tiene <strong>Memoria Interna (AsyncStorage)</strong>. Pueden censar 50 casas por la mañana sin agotar saldo. Luego, al medio día, bajan a la Base de Misiones que tiene WiFi, abren la pestaña de inicio, aprietan el botón verde gigante de Sincronizar, y liiisto... Todos esos 50 pacientes subieron al servidor de la directiva."
+                    </div>
+                </div>
+
+                <div class="didactic-section">
+                    <div class="activity-box" style="background: #FFF1F2; border-color: #FECDD3;">
+                        <h4 style="color: #BE123C;"><i class="fa-solid fa-truck-medical"></i> Simulacro: Activación del Botón de Pánico</h4>
+                        <p><strong>Ejercicio en vivo:</strong> El facilitador pide a los voceros que abran el menú lateral y ubiquen el "Botón SOS".</p>
+                        <ul class="check-list">
+                            <li>Se les enseñará a aceptar los "Permisos de Ubicación" en Android.</li>
+                            <li>Se activará el botón SOS. Un vocero emitirá la alerta desde un teléfono.</li>
+                            <li>En la pantalla grande (Proyector del facilitador que hace de Administrador), mostrará cómo salta el aviso parpadeante en el Dashboard con las coordenadas Exactas de la vereda donde el vocero apretó el SOS.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= MÓDULO IV ================= -->
+        <div class="module-card" style="border-top: 5px solid var(--accent);">
+            <div class="module-header" style="background: #FFFBEB;">
+                <h2 style="color: var(--accent);"><i class="fa-solid fa-chart-pie"></i> Módulo IV: Análisis y Toma de Decisiones</h2>
+                <p>Duración: 45 Minutos | Modalidad: Analítica de Datos</p>
+                <span class="target-badge" style="background:#FEE2E2; color:#B91C1C;">Administradores / Directivos</span>
+            </div>
+            
+            <div class="module-content">
+                <div class="didactic-section">
+                    <h3 class="didactic-title"><i class="fa-solid fa-bullseye"></i> Objetivo del Módulo</h3>
+                    <p>Enseñar a la plana mayor cómo "leer" los gráficos del Dashboard Ejecutivo (DashboardScreen) para planificar jornadas de vacunación o exigir insumos a la alcaldía, y cómo corregir el Diccionario Médico (Fusión de Brechas).</p>
+                </div>
+
+                <div class="didactic-section">
+                    <div class="script-box">
+                        "Director, el Dashboard es su tablero de ajedrez. No necesita revisar los 5,000 registros médicos a mano. SIVICO23 genera un Gráfico de Pastel que le dirá: 'El 60% de los infartos este mes vinieron del Sector Sierra Maestra'. Con esa data científica, usted puede exigirle al gobierno local que envíe jornada de despistaje exactamente a ese sector. Pero además, usted tiene el control de calidad: El panel de Fusiones."
+                    </div>
+                </div>
+
+                <div class="didactic-section">
+                    <div class="activity-box" style="background: #FAF5FF; border-color: #E9D5FF;">
+                        <h4 style="color: #7E22CE;"><i class="fa-solid fa-wrench"></i> Práctica Administrativa: Reparando 'Brechas'</h4>
+                        <p><strong>Ejecución del Administrador:</strong> El facilitador explica el siguiente problema crítico y su solución:</p>
+                        <ul class="check-list">
+                            <li><strong>El Problema:</strong> 10 médicos, apurados, anotaron a mano <em>"Asitromisina", "Acitromicina", "Acytrhromycina"</em> (errores ortográficos). El programa las clasifica como 3 medicinas distintas y no están en el inventario. Se van a la pestaña oculta de "Necesidad Real".</li>
+                            <li><strong>La Solución Mágica:</strong> Entrar a la Pestaña "Analítica de Brechas" en el Dashboard.</li>
+                            <li><strong>Acción del Taller:</strong> Localizar uno de los errores en el Dashboard y presionar <strong>"Fusión Administrativa"</strong>. Seleccionar del catálogo desplegable el oficial "Azitromicina". El sistema recorrerá todos los miles de pacientes afectados y le arreglará el récipe silenciosamente.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= MÓDULO V ================= -->
+        <div class="module-card" style="border-top: 5px solid #10B981;">
+            <div class="module-header" style="background: #F0FDF4;">
+                <h2 style="color: #166534;"><i class="fa-solid fa-virus-shield"></i> Módulo V: Vigilancia PAI y Discapacidad</h2>
+                <p>Duración: 45 Minutos | Modalidad: Registro de Población Vulnerable</p>
+                <span class="target-badge" style="background:#D1FAE5; color:#065F46;">Voceros y Médicos</span>
+            </div>
+            
+            <div class="module-content">
+                <div class="didactic-section">
+                    <h3 class="didactic-title"><i class="fa-solid fa-bullseye"></i> Objetivo del Módulo</h3>
+                    <p>Dominar el control de inmunización pediátrica y el censo de personas con discapacidad, asegurando que la comunidad reciba las vacunas y ayudas sociales (CONAPDIS) correspondientes.</p>
+                </div>
+
+                <div class="didactic-section">
+                    <div class="script-box">
+                        "Compañeros, la salud no es solo curar, es prevenir. Con el nuevo **Módulo PAI**, SIVICO23 les avisará qué niño de su calle está en 'mora' con sus vacunas. Ya no hay que adivinar; el sistema calcula la edad y les dice si le falta la Polio o la Pentavalente. Además, ahora podemos registrar formalmente a nuestros vecinos con discapacidad y su número de certificado, para que ningún beneficio social se quede por fuera por falta de datos."
+                    </div>
+                </div>
+
+                <div class="didactic-section">
+                    <div class="activity-box" style="background: #ECFDF5; border-color: #A7F3D0;">
+                        <h4><i class="fa-solid fa-syringe"></i> Dinámica: El Censo de los "Invencibles"</h4>
+                        <p><strong>Reto por equipos:</strong> Simulemos que encontramos a una niña de 2 meses que no tiene ninguna vacuna.</p>
+                        <ul class="check-list">
+                            <li>Entrar al buscador del **Esquema PAI**.</li>
+                            <li>Registrar la primera dosis de BCG y Hepatitis B.</li>
+                            <li>Observar cómo el gráfico de "Inmunidad de Rebaño" en el Dashboard sube automáticamente según el sector.</li>
+                            <li>Registrar a un adulto mayor con discapacidad motora y verificar que tenga su número de certificado CONAPDIS anotado.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <footer style="text-align: center; color: var(--text-muted); padding-top: 10px; padding-bottom: 20px;">
+            <p style="margin-bottom: 5px;"><strong>Manual Pedagógico para Facilitadores SIVICO23 v3.1</strong></p>
+            <p style="font-size: 0.9rem;">Documentación Universitaria. Formando a las comunidades hacia la soberanía tecnológica.</p>
+        </footer>
+
+    </div>
+</body>
+</html>

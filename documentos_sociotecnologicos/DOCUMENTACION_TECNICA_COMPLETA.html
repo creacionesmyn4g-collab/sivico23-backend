@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIVICO23 — Documentación Técnica Completa (v3.1 - 17 Tablas)</title>
+    <style>
+        :root { --primary: #1D4ED8; --accent: #3B7FF5; --green: #22C55E; --red: #EF4444; --bg: #F8FAFC; --text: #1E293B; --text2: #475569; --border: #E2E8F0; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+        .container { max-width: 960px; margin: 0 auto; padding: 40px 24px; }
+        h1 { font-size: 2.2em; color: var(--primary); border-bottom: 3px solid var(--primary); padding-bottom: 12px; margin-bottom: 8px; }
+        h2 { font-size: 1.5em; color: var(--primary); margin-top: 40px; border-left: 4px solid var(--accent); padding-left: 12px; }
+        h3 { font-size: 1.15em; color: var(--text); margin-top: 24px; margin-bottom: 8px; }
+        p, li { color: var(--text2); margin-bottom: 8px; }
+        .badge { display: inline-block; background: var(--primary); color: #fff; padding: 4px 14px; border-radius: 20px; font-size: 0.8em; font-weight: 700; }
+        .badge-green { background: var(--green); }
+        .badge-red { background: var(--red); }
+        table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.92em; }
+        th { background: var(--primary); color: #fff; padding: 10px 12px; text-align: left; }
+        td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+        tr:nth-child(even) { background: #f1f5f9; }
+        code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; color: var(--primary); }
+        pre { background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 8px; overflow-x: auto; margin: 12px 0; font-size: 0.9em; }
+        .card { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin: 16px 0; }
+        .card h3 { margin-top: 0; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .info-box { background: #EFF6FF; border-left: 4px solid var(--accent); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; }
+        .warn-box { background: #FEF2F2; border-left: 4px solid var(--red); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; }
+        .success-box { background: #F0FDF4; border-left: 4px solid var(--green); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; }
+        .toc { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin: 24px 0; }
+        .toc ol { padding-left: 24px; }
+        .toc li { margin-bottom: 4px; }
+        .toc a { color: var(--accent); text-decoration: none; }
+        .toc a:hover { text-decoration: underline; }
+        @media print { body { font-size: 11pt; } .container { max-width: 100%; } h1 { font-size: 1.8em; } h2 { font-size: 1.3em; page-break-before: always; } }
+        @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <!-- ===== PORTADA ===== -->
+    <div style="text-align: center; margin-bottom: 40px;">
+        <h1 style="border: none; text-align: center;">SIVICO<span style="color: var(--red);">23</span> <span style="font-size: 0.5em; color: var(--red);">v3.1 - 3FN</span></h1>
+        <p style="font-size: 1.2em; color: var(--text); margin: 0;">Sistema de Vigilancia Sociocomunitaria y Control de Salud</p>
+        <p style="color: var(--text2); margin-top: 4px;">Parroquia 23 de Enero — Municipio Libertador — Caracas, Venezuela</p>
+        <p style="margin-top: 16px;">
+            <span class="badge">Fase 2 Final</span>
+            <span class="badge badge-green">Arquitectura de 17 Tablas</span>
+        </p>
+        <p style="font-size: 0.85em; color: var(--text2); margin-top: 20px;">
+            Proyecto de Grado — TSU en Informática — Actualizado Marzo 2026
+        </p>
+    </div>
+
+    <!-- ===== ÍNDICE ===== -->
+    <div class="toc">
+        <h3>📋 Índice de Contenidos</h3>
+        <ol>
+            <li><a href="#s1">Descripción del Proyecto</a></li>
+            <li><a href="#s3">Stack Tecnológico</a></li>
+            <li><a href="#s4">Arquitectura del Sistema</a></li>
+            <li><a href="#s6">Modelo de Base de Datos (17 Tablas - 3FN)</a></li>
+            <li><a href="#s7">Diccionario de Datos Completo</a></li>
+            <li><a href="#s9">Sistema de Roles y Permisos</a></li>
+            <li><a href="#s_catalogos">Arquitectura de Catálogos Médicos</a></li>
+            <li><a href="#s_map">Mapa Interactivo y Estadísticas por Sector</a></li>
+            <li><a href="#s_sos">Monitoreo de Emergencias (SOS)</a></li>
+            <li><a href="#s_integridad">Integridad de Datos y Deduplicación</a></li>
+            <li><a href="#s_offline">Lógica de Persistencia y Sincronización</a></li>
+            <li><a href="#s14">Seguridad e Integridad</a></li>
+        </ol>
+    </div>
+
+    <!-- ===== 1. DESCRIPCIÓN ===== -->
+    <h2 id="s1">1. Descripción del Proyecto</h2>
+    <p>SIVICO23 es un sistema de gestión de salud comunitaria fundamentado en la <strong>Tercera Forma Normal (3FN)</strong>. A diferencia de sistemas planos, SIVICO23 utiliza tablas maestras para garantizar que no existan redundancias ni errores de integridad en la información de la Parroquia 23 de Enero.</p>
+
+    <!-- ===== 4. ARQUITECTURA ===== -->
+    <h2 id="s4">2. Arquitectura del Sistema</h2>
+    <pre>
+│     CAPA DE DATOS           │
+│  PostgreSQL 16              │
+│  17 TABLAS MAESTRAS         │
+│  Normalización: 3FN REAL    │
+│  Relaciones: FK + RESTRICT  │
+└─────────────────────────────┘
+    </pre>
+    <div class="success-box">
+        <strong>Alcance del documento:</strong> Esta documentación cubre todas las áreas del proyecto, incluyendo la estructura de datos, la seguridad, los roles, el módulo PAI de vacunación, el módulo de discapacidad, emergencias SOS, jornadas comunitarias, notificaciones de usuario y auditoría de pacientes.
+    </div>
+
+    <!-- ===== 6. MODELO DE BASE DE DATOS ===== -->
+    <h2 id="s6">3. Modelo de Base de Datos (17 Tablas)</h2>
+    <div class="success-box">
+        <strong>Defensa Técnica:</strong> El sistema ha evolucionado de un modelo básico a uno de **17 tablas** para cubrir necesidades epidemiológicas avanzadas. Los catálogos de Vacunas, Discapacidades y Jornadas son entidades independientes, lo que garantiza el cumplimiento de la **3FN** en toda la lógica de salud pública.
+    </div>
+
+    <h3>Estructura de las 17 Tablas</h3>
+    <div class="grid">
+        <div>
+            <h4>Núcleo Operativo</h4>
+            <ol>
+                <li><strong>roles</strong>: Perfiles de acceso.</li>
+                <li><strong>usuarios</strong>: Personal del sistema.</li>
+                <li><strong>sectores</strong>: Georreferenciación.</li>
+                <li><strong>pacientes</strong>: Población civil monitorizada.</li>
+                <li><strong>registros</strong>: Encuentros médicos.</li>
+                <li><strong>tratamientos</strong>: Diagnósticos (CIE-10).</li>
+                <li><strong>medicamentos</strong>: Prescripción farmacológica.</li>
+            </ol>
+        </div>
+        <div>
+            <h4>Salud Pública & Especialidades</h4>
+            <ol start="8">
+                <li><strong>categorias_cie10</strong>: Clasificación OMS.</li>
+                <li><strong>patologias_cie10</strong>: Glosario CIE-10 completo (7.000+ diagnósticos).</li>
+                <li><strong>cat_vacunas_mpps</strong>: Catálogo oficial de inmunización.</li>
+                <li><strong>registro_vacunacion</strong>: Historial PAI multi-dosis.</li>
+                <li><strong>cat_discapacidades</strong>: Tipificación CONAPDIS.</li>
+                <li><strong>paciente_discapacidades</strong>: Registro de certificados.</li>
+            </ol>
+        </div>
+    </div>
+    <div class="grid" style="margin-top: 10px;">
+        <div>
+            <h4>Comunidad & Emergencias</h4>
+            <ol start="14">
+                <li><strong>alertas_emergencia</strong>: Señales SOS con GPS.</li>
+                <li><strong>jornadas_salud</strong>: Planificación comunitaria.</li>
+                <li><strong>notificaciones_usuarios</strong>: Centro de alertas.</li>
+                <li><strong>auditoria_pacientes</strong>: Trazabilidad de cambios.</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- ===== 7. DICCIONARIO DE DATOS Y JUSTIFICACIÓN ===== -->
+    <h2 id="s7">4. Diccionario de Datos (17 Tablas)</h2>
+
+    <div class="info-box">
+        <strong>Justificación de Normalización (3FN):</strong> 
+        Para cumplir con la Tercera Forma Normal, se han eliminado las dependencias transitivas. Los atributos que dependían de otros atributos no primarios (como el nombre del sector o el nombre del rol) se han movido a sus propias entidades maestras, vinculándose mediante IDs numéricos.
+    </div>
+
+    <h3>4.1 Tabla: <code>roles</code> (Maestra de Seguridad)</h3>
+    <p>Garantiza la integridad de los privilegios de acceso al sistema.</p>
+    <table>
+        <tr><th>Atributo</th><th>Tipo</th><th>Propósito Técnico / Médico</th></tr>
+        <tr><td>id</td><td>SERIAL (PK)</td><td>Identificador único. Permite referenciar el rol sin cargar strings pesados.</td></tr>
+        <tr><td>nombre</td><td>VARCHAR</td><td>Almacena el perfil (admin, medico, vocero). Evita la duplicidad semántica.</td></tr>
+        <tr><td>descripcion</td><td>TEXT</td><td>Explica el alcance del cargo para fines de auditoría administrativa.</td></tr>
+    </table>
+
+    <h3>4.2 Tabla: <code>sectores</code> (Maestra Territorial)</h3>
+    <p>Entidad fundamental para la epidemiología comunitaria.</p>
+    <table>
+        <tr><th>Atributo</th><th>Tipo</th><th>Propósito Técnico / Médico</th></tr>
+        <tr><td>id</td><td>SERIAL (PK)</td><td>Vínculo relacional para pacientes y personal de salud.</td></tr>
+        <tr><td>nombre</td><td>VARCHAR</td><td>Identifica el sector (ej: "Sierra Maestra"). Único para evitar redundancia.</td></tr>
+        <tr><td>latitud/longitud</td><td>DECIMAL</td><td>Permite la representación en mapas GIS para detectar focos de infección.</td></tr>
+    </table>
+
+    <h3>4.3 Tabla: <code>categorias_cie10</code> (Maestra Clínica)</h3>
+    <p>Basado en la clasificación de la OMS para agrupación estadística.</p>
+    <table>
+        <tr><th>Atributo</th><th>Tipo</th><th>Propósito Técnico / Médico</th></tr>
+        <tr><td>id</td><td>SERIAL (PK)</td><td>ID de rama médica (Metabólica, Cardíaca, etc.).</td></tr>
+        <tr><td>nombre</td><td>VARCHAR</td><td>Facilita el filtrado de miles de patologías en grupos manejables.</td></tr>
+    </table>
+
+    <h3>4.4 Tabla: <code>patologias_cie10</code> (Diccionario Médico Completo)</h3>
+    <p>Glosario oficial CIE-10 con soporte para 7.000+ diagnósticos. El frontend utiliza un catálogo curado de 50 patologías principales para optimización offline, pero el backend mantiene el diccionario completo para búsquedas avanzadas y diagnósticos especializados.</p>
+    <table>
+        <tr><th>Atributo</th><th>Tipo</th><th>Propósito Técnico / Médico</th></tr>
+        <tr><td>id</td><td>SERIAL (PK)</td><td>Identificador interno del sistema.</td></tr>
+        <tr><td>codigo</td><td>VARCHAR (UQ)</td><td>Código oficial CIE-10 (ej: I10). Único para evitar diagnósticos falsos.</td></tr>
+        <tr><td>nombre</td><td>VARCHAR</td><td>Nombre científico/común del diagnóstico.</td></tr>
+        <tr><td>categoria_id</td><td>FK</td><td>Normaliza la jerarquía médica al vincular con la tabla categorías.</td></tr>
+    </table>
+
+    <h3>4.5 Tabla: <code>usuarios</code> (Personal de Salud)</h3>
+    <p>Operadores del sistema debidamente autenticados.</p>
+    <table>
+        <tr><th>Atributo</th><th>Tipo</th><th>Propósito Técnico / Médico</th></tr>
+        <tr><td>cedula</td><td>VARCHAR (UQ)</td><td>Identificación legal venezolana. Clave de búsqueda administrativa.</td></tr>
+        <tr><td>rol_id</td><td>FK</td><td>Define si el usuario puede medicar (médico) o solo registrar (vocero).</td></tr>
+        <tr><td>password_hash</td><td>VARCHAR</td><td>Seguridad criptográfica; nunca se guarda la clave real (Blindado).</td></tr>
+    </table>
+
+    <h3>4.6 Tabla: <code>pacientes</code> (Población Beneficiaria)</h3>
+    <p>Entidad central del sistema de salud comunitario.</p>
+    <table>
+        <tr><th>Atributo</th><th>Tipo</th><th>Propósito Técnico / Médico</th></tr>
+        <tr><td>cedula</td><td>VARCHAR</td><td>ID del ciudadano. Permite el rastreo histórico de su salud.</td></tr>
+        <tr><td>fecha_nacimiento</td><td>DATE</td><td>Dato crítico para calcular la edad automáticamente (Estadística Vital).</td></tr>
+        <tr><td>sector_id</td><td>FK</td><td>Vínculo territorial 3FN. Indica dónde vive el paciente.</td></tr>
+        <tr><td>direccion</td><td>TEXT</td><td>Dirección exacta o coordenadas manuales para geolocalización precisa.</td></tr>
+        <tr><td>ced_repre</td><td>VARCHAR</td><td>Atributo para pediatría; vincula a un infante con un adulto responsable.</td></tr>
+    </table>
+
+    <h3>4.7 Tabla: <code>registros</code> (Encuentro Médico)</h3>
+    <p>Cabecera de cada atención realizada.</p>
+    <table>
+        <tr><th>Atributo</th><th>Tipo</th><th>Propósito Técnico / Médico</th></tr>
+        <tr><td>codigo</td><td>VARCHAR (UQ)</td><td>Número de registro único para seguimiento físico/digital.</td></tr>
+        <tr><td>paciente_id</td><td>FK</td><td>Vínculo al paciente atendido.</td></tr>
+        <tr><td>usuario_id</td><td>FK</td><td>Firma digital del responsable (médico/vocero) que realizó la carga.</td></tr>
+    </table>
+
+    <h3>4.8 Tabla: <code>tratamientos</code> (Detalle Diagnóstico)</h3>
+    <p>Permite múltiples hallazgos en un solo encuentro.</p>
+    <table>
+        <tr><th>Atributo</th><th>Tipo</th><th>Propósito Técnico / Médico</th></tr>
+        <tr><td>patologia_id</td><td>FK</td><td>Vínculo al catálogo CIE-10. Normaliza el diagnóstico.</td></tr>
+        <tr><td>descripcion</td><td>TEXT</td><td>Observaciones médicas manuales del caso específico.</td></tr>
+    </table>
+
+    <h3>4.9 Tabla: <code>medicamentos</code> (Receta y Suministro)</h3>
+    <p>Control de brechas y requerimientos farmacológicos.</p>
+    <table>
+        <tr><th>Atributo</th><th>Tipo</th><th>Propósito Técnico / Médico</th></tr>
+        <tr><td>dosis/via</td><td>VARCHAR</td><td>Especificaciones clínicas de la receta médica.</td></tr>
+        <tr><td>disponibilidad</td><td>BOOLEAN</td><td>Dato vital para detectar escasez o necesidad de suministro en el sector.</td></tr>
+        <tr><td>es_oficial</td><td>BOOLEAN</td><td>Diferencia entre glosario farmacéutico y entrada manual.</td></tr>
+    </table>
+
+    <h3>4.10 Tabla: <code>alertas_emergencia</code> (Módulo SOS)</h3>
+    <p>Eventos en tiempo real para respuesta inmediata.</p>
+    <table>
+        <tr><th>Atributo</th><th>Tipo</th><th>Propósito Técnico / Médico</th></tr>
+        <tr><td>latitud/longitud</td><td>DECIMAL</td><td>Ubicación GPS exacta del emisor para despacho de ambulancias.</td></tr>
+        <tr><td>tipo</td><td>VARCHAR</td><td>Categoría del evento (SOS, Urgencia, Llamada).</td></tr>
+        <tr><td>estado</td><td>VARCHAR</td><td>Ciclo de vida de la alerta (activa, atendida, cancelada).</td></tr>
+    </table>
+
+    <h3>4.11 Tabla: <code>cat_vacunas_mpps</code> (Catálogo PAI)</h3>
+    <p>Esquema oficial de inmunización del Ministerio del Poder Popular para la Salud.</p>
+    <table>
+        <tr><th>Atributo</th><th>Tipo</th><th>Propósito Técnico / Médico</th></tr>
+        <tr><td>nombre</td><td>VARCHAR</td><td>Nombre del biológico (ej: BCG, Pentavalente).</td></tr>
+        <tr><td>edad_minima_meses</td><td>INT</td><td>Control de elegibilidad pediátrica automática.</td></tr>
+        <tr><td>dosis_totales</td><td>INT</td><td>Define el esquema completo (ej: 5 dosis para Polio).</td></tr>
+    </table>
+
+    <h3>4.12 Tabla: <code>registro_vacunacion</code> (Historial PAI)</h3>
+    <p>Seguimiento de dosis aplicadas a la población infantil.</p>
+    <table>
+        <tr><th>Atributo</th><th>Tipo</th><th>Propósito Técnico / Médico</th></tr>
+        <tr><td>paciente_id</td><td>FK</td><td>Vínculo al infante (generalmente < 12 años).</td></tr>
+        <tr><td>numero_dosis</td><td>INT</td><td>Control secuencial (Dosis 1, Refuerzo 1, etc.).</td></tr>
+        <tr><td>lote_vacuna</td><td>VARCHAR</td><td>Trazabilidad para farmacovigilancia.</td></tr>
+    </table>
+
+    <h3>4.13 Tabla: <code>cat_discapacidades</code> (Tipología CONAPDIS)</h3>
+    <p>Clasificación oficial de discapacidades según estándares nacionales.</p>
+    <table>
+        <tr><th>Atributo</th><th>Tipo</th><th>Propósito Técnico / Médico</th></tr>
+        <tr><td>nombre</td><td>VARCHAR</td><td>Tipo (Visual, Auditiva, Motora, Intelectual, etc.).</td></tr>
+    </table>
+
+    <h3>4.14 Tabla: <code>paciente_discapacidades</code> (Registro de Discapacidad)</h3>
+    <p>Vinculación de pacientes con sus certificaciones oficiales.</p>
+    <table>
+        <tr><th>Atributo</th><th>Tipo</th><th>Propósito Técnico / Médico</th></tr>
+        <tr><td>posee_certificado</td><td>BOOLEAN</td><td>Validación de carnet CONAPDIS.</td></tr>
+        <tr><td>numero_certificado</td><td>VARCHAR</td><td>ID único del certificado para trámites sociales.</td></tr>
+    </table>
+
+    <h3>4.15 Tabla: <code>jornadas_salud</code> (Planificación Comunal)</h3>
+    <p>Eventos de atención masiva en los sectores.</p>
+    <table>
+        <tr><th>Atributo</th><th>Tipo</th><th>Propósito Técnico / Médico</th></tr>
+        <tr><td>titulo/fecha</td><td>VARCHAR/DT</td><td>Detalles logísticos de la jornada preventiva.</td></tr>
+        <li>sector_id</td><td>FK</td><td>Ubicación territorial de la jornada.</td></tr>
+    </table>
+
+    <h3>4.16 Tabla: <code>notificaciones_usuarios</code> (Alertas del Sistema)</h3>
+    <p>Canal de comunicación directa con el personal de salud.</p>
+    <table>
+        <tr><th>Atributo</th><th>Tipo</th><th>Propósito Técnico / Médico</th></tr>
+        <tr><td>leida</td><td>BOOLEAN</td><td>Control de lectura de avisos de jornadas o SOS.</td></tr>
+    </table>
+
+    <h3>4.17 Tabla: <code>auditoria_pacientes</code> (Seguridad de Datos)</h3>
+    <p>Trazabilidad total de cambios en la base de datos.</p>
+    <table>
+        <tr><th>Atributo</th><th>Tipo</th><th>Propósito Técnico / Médico</th></tr>
+        <tr><td>operacion</td><td>VARCHAR</td><td>Registro de Insert/Update/Delete (Forense).</td></tr>
+    </table>
+
+    <!-- ===== JUSTIFICACIÓN SOCIO-TECNOLÓGICA ===== -->
+    <h2 id="s_just">5. Justificación Socio-Tecnológica (El "Por qué")</h2>
+    <div class="card">
+        <h3>5.1 Necesidad de la Solución</h3>
+        <p>En la Parroquia 23 de Enero, la salud comunitaria dependía históricamente de registros manuales y "fichas de cartón" que se perdían, se deterioraban o no permitían un análisis rápido. SIVICO23 nace para transformar el **dato pasivo** en **acción epidemiológica**. La necesidad tecnológica radica en centralizar la información para detectar brotes en tiempo real, asegurar que ningún niño pierda su esquema de vacunación y georreferenciar las vulnerabilidades sociales.</p>
+        
+        <h3>5.2 Elección del Lenguaje y Herramientas</h3>
+        <ul>
+            <li><strong>React Native / Expo:</strong> Se eligió por su capacidad **multiplataforma**. Los voceros de salud usan diversos dispositivos Android. Esta tecnología permite desplegar una App nativa y fluida sin necesidad de programar dos veces, facilitando el acceso tecnológico a la comunidad.</li>
+            <li><strong>Node.js (JavaScript):</strong> Es el lenguaje de la web moderna. Su alta concurrencia permite que cientos de voceros automaticen y sincronicen datos simultáneamente sin colapsar el servidor, garantizando que el sistema sea **ligero y escalable**.</li>
+            <li><strong>PostgreSQL:</strong> A diferencia de bases de datos simples, PostgreSQL ofrece una **integridad relacional estricta**. Esto es vital en medicina: un tratamiento no puede existir sin un paciente, y una vacuna no puede quedar "en el aire". El uso de SQL garantiza que la historia clínica sea inviolable y coherente.</li>
+        </ul>
+        
+        <h3>5.3 Impacto Social</h3>
+        <p>El uso de estas tecnologías permite el **Empoderamiento Tecnológico** de la comunidad. Ya no dependen de un ente externo para saber cuántos hipertensos hay en su calle; el sistema les devuelve el poder de la información para gestionar sus propios recursos y medicinas ante las autoridades de salud.</p>
+    </div>
+
+    <!-- ===== 5. STACK TECNOLÓGICO ===== -->
+    <h2 id="s3">6. Stack Tecnológico Detallado</h2>
+    <div class="grid">
+        <div class="card">
+            <h3>📱 Frontend (Móvil)</h3>
+            <ul>
+                <li><strong>React Native / Expo:</strong> Framework para ejecución nativa en Android e iOS.</li>
+                <li><strong>React Navigation:</strong> Gestión de pilas y flujo de pantallas.</li>
+                <li><strong>Axios:</strong> Cliente HTTP con interceptores para manejo de tokens.</li>
+                <li><strong>AsyncStorage:</strong> Persistencia local de datos (Caché y Offline).</li>
+                <li><strong>Catálogo Curado:</strong> Frontend incluye catálogo optimizado de 50 patologías principales + 138 medicamentos únicos para uso offline, complementado con búsqueda dinámica al backend CIE-10 completo (7.000+ diagnósticos).</li>
+            </ul>
+        </div>
+        <div class="card">
+            <h3>⚙️ Backend & DB</h3>
+            <ul>
+                <li><strong>Node.js & Express:</strong> Servidor de API REST bajo arquitectura MVC.</li>
+                <li><strong>PostgreSQL 16:</strong> Base de datos relacional robusta.</li>
+                <li><strong>PG-Pool:</strong> Gestión de conexiones concurrentes optimizada.</li>
+                <li><strong>Bcrypt:</strong> Encriptación de nivel bancario para credenciales.</li>
+            </ul>
+        </div>
+    </div>
+
+    <h2 id="s_offline">6. Lógica de Persistencia y Sincronización</h2>
+    <p>SIVICO23 implementa una arquitectura de <strong>"Primero Local, Luego Nube"</strong> para garantizar operatividad en zonas de baja conectividad:</p>
+    <div class="info-box">
+        <strong>Sincronización Inteligente:</strong> Cuando se detecta conexión, el sistema "re-hidrata" la base de datos central mediante un proceso de reconciliación que evita duplicados y asegura que los registros locales se consoliden con el historial global del paciente.
+    </div>
+
+    <h2 id="s_catalogos">7. Arquitectura de Catálogos Médicos</h2>
+    <p>SIVICO23 implementa una estrategia híbrida de catálogos para optimizar rendimiento y funcionalidad:</p>
+    <div class="grid">
+        <div class="card">
+            <h3>📱 Catálogo Frontend (Offline-First)</h3>
+            <ul>
+                <li><strong>50 Patologías Principales:</strong> Curaduría manual de diagnósticos más comunes en contexto comunitario venezolano.</li>
+                <li><strong>138 Medicamentos Únicos:</strong> Formulaciones esenciales con dosificación y vías de administración.</li>
+                <li><strong>Persistencia Local:</strong> AsyncStorage garantiza funcionamiento sin conexión a internet.</li>
+                <li><strong>Optimización UX:</strong> Búsqueda rápida y autocompletado sin dependencias de red.</li>
+            </ul>
+        </div>
+        <div class="card">
+            <h3>☁️ Catálogo Backend (CIE-10 Completo)</h3>
+            <ul>
+                <li><strong>7.000+ Diagnósticos:</strong> Cobertura total de la Clasificación Internacional de Enfermedades (CIE-10).</li>
+                <li><strong>Búsqueda Dinámica:</strong> API de búsqueda en tiempo real para diagnósticos especializados.</li>
+                <li><strong>Actualización Continua:</strong> Scripts automatizados mantienen sincronización con estándares OMS.</li>
+                <li><strong>Integridad Médica:</strong> Códigos oficiales garantizan precisión diagnóstica.</li>
+            </ul>
+        </div>
+    </div>
+    <div class="success-box">
+        <strong>Beneficios de la Arquitectura Híbrida:</strong> El catálogo curado del frontend asegura usabilidad offline, mientras que el backend completo permite diagnósticos especializados y mantiene la integridad médica profesional.
+    </div>
+
+    <h2 id="s_map">8. Mapa Interactivo y Estadísticas por Sector</h2>
+    <p>El sistema incluye un módulo de cartografía digital (`MapaSectores`) que permite visualizar la situación sanitaria de la Parroquia 23 de Enero:</p>
+    <ul>
+        <li><strong>Zonificación:</strong> Representación visual de los sectores oficiales.</li>
+        <li><strong>Estadísticas en Tiempo Real:</strong> Al seleccionar un sector, el Dashboard filtra automáticamente patologías top, población por sexo y distribución de edades de esa zona específica.</li>
+    </ul>
+
+    <h2 id="s_sos">8. Monitoreo de Emergencias (SOS)</h2>
+    <p>Módulo crítico para la respuesta inmediata ante eventos de salud:</p>
+    <div class="warn-box">
+        <strong>Flujo SOS:</strong> El usuario activa la alerta con un solo toque; el sistema captura las coordenadas GPS y las envía al panel de control central (visto por administradores y médicos) para coordinar la atención.
+    </div>
+
+    <h2 id="s_integridad">9. Integridad de Datos y Deduplicación</h2>
+    <p>Para mantener la calidad de la información epidemiológica, el backend implementa procesos automáticos:</p>
+    <ul>
+        <li><strong>Deduplicación en Caliente:</strong> Al arrancar el servidor, se ejecutan scripts de limpieza que unifican historiales de pacientes registrados bajo la misma cédula por error.</li>
+        <li><strong>Blindaje SQL:</strong> Uso de transacciones atómicas y `UPSERT` para evitar colisiones durante sincronizaciones masivas.</li>
+    </ul>
+
+    <h2 id="s_analisis">10. Análisis Epidemiológico Avanzado (v4.0)</h2>
+    <p>El Dashboard v4.0 introduce motores de cálculo en tiempo real:</p>
+    <ul>
+        <li><strong>Analítica PAI:</strong> Calcula la cobertura de vacunación cruzando edad vs. dosis aplicadas.</li>
+        <li><strong>Detección de Niños en Riesgo:</strong> Identifica infantes con esquemas incompletos para su edad.</li>
+        <li><strong>Vigilancia de Discapacidad:</strong> Censo georreferenciado de personas con necesidades especiales y carnet CONAPDIS.</li>
+    </ul>
+
+    <h2 id="s_pai">11. Programa Ampliado de Inmunización (PAI)</h2>
+    <div class="info-box">
+        <strong>Lógica de Negocio:</strong> SIVICO23 automatiza el control de dosis. Por ejemplo, al registrar una "Pentavalente", el sistema sabe que el infante requiere 5 dosis en intervalos específicos, permitiendo generar alertas de "Mora de Vacunación".
+    </div>
+    <ul>
+        <li><strong>Buscador PAI:</strong> Interfaz simplificada para encontrar niños y ver su "Tarjeta de Vacunación Digital".</li>
+        <li><strong>Carga de Dosis:</strong> Registro de fecha, lote y responsable de la aplicación.</li>
+    </ul>
+
+    <h2 id="s_discapacidad">12. Módulo de Discapacidad</h2>
+    <p>Cumpliendo con la Ley para Personas con Discapacidad:</p>
+    <ul>
+        <li><strong>Clasificación CONAPDIS:</strong> Registro de tipos de discapacidad (Visual, Auditiva, Motora, etc.).</li>
+        <li><strong>Validación de Certificados:</strong> Campo específico para el número de certificado oficial, facilitando la gestión de ayudas sociales en el sector.</li>
+    </ul>
+
+    <!-- ===== 14. SEGURIDAD ===== -->
+    <h2 id="s14">13. Seguridad e Integridad</h2>
+    <ul>
+        <li><strong>Consultas Parametrizadas:</strong> Blindaje total contra Inyección SQL ($1, $2).</li>
+        <li><strong>Bcrypt:</strong> Las contraseñas nunca se guardan en texto plano, solo el hash.</li>
+        <li><strong>Integridad Referencial:</strong> Uso de <code>ON DELETE RESTRICT</code> para evitar borrar un sector que tiene pacientes registrados.</li>
+        <li><strong>JWT:</strong> Autenticación persistente con tokens de larga duración (7 días).</li>
+    </ul>
+
+    <h2 id="s_credenciales">9. Credenciales de Acceso (Entorno de Desarrollo)</h2>
+    <div class="warn-box">
+        <strong>Seguridad:</strong> Por motivos de seguridad, estas credenciales han sido removidas de la interfaz de la aplicación y solo deben ser utilizadas por personal técnico autorizado durante fases de prueba.
+    </div>
+    <table>
+        <tr><th>Rol de Usuario</th><th>Cédula (Usuario)</th><th>Contraseña (Password)</th><th>Permisos</th></tr>
+        <tr><td>Administrador</td><td><code>V-00000000</code></td><td><code>admin123</code></td><td>Control Total + Unificación</td></tr>
+        <tr><td>Vocero Comunal</td><td><code>V-11111111</code></td><td><code>vocero123</code></td><td>Registro + Historial de Sector</td></tr>
+        <tr><td>Médico Especialista</td><td><code>V-33333333</code></td><td><code>medico123</code></td><td>Registro + Prescripción Glosario</td></tr>
+    </table>
+
+    <h2 id="s_bibliografia">10. Referencias Bibliográficas y Glosario</h2>
+    <p>La arquitectura clínica de SIVICO23 se fundamenta en estándares internacionales de salud pública:</p>
+    <ul>
+        <li><strong>Organización Mundial de la Salud (OMS):</strong> Clasificación Estadística Internacional de Enfermedades y Problemas Relacionados con la Salud (CIE-10). Décima Revisión.</li>
+        <li><strong>Ministerio del Poder Popular para la Salud (MPPS):</strong> Protocolos de Atención Primaria y Vigilancia Epidemiológica Comunitaria.</li>
+        <li><strong>Constitución de la República Bolivariana de Venezuela:</strong> Artículos 83, 84 y 85 (Derecho a la Salud y Gestión Participativa).</li>
+        <li><strong>Codd, E. F. (1970):</strong> A Relational Model of Data for Large Shared Data Banks (Fundamentos de la Normalización 3FN aplicada en este sistema).</li>
+    </ul>
+
+    <!-- ===== FOOTER ===== -->
+    <div style="text-align: center; margin-top: 60px; padding: 20px; border-top: 2px solid var(--border);">
+        <p style="font-size: 1.1em; font-weight: 700; color: var(--primary);">SIVICO<span style="color: var(--red);">23</span> v3.1 - 2026</p>
+        <p style="font-size: 0.85em; color: var(--text2);">Certificado de Normalización 3FN y Auditoría de 17 Tablas Completada</p>
+    </div>
+
+</div>
+</body>
+</html>

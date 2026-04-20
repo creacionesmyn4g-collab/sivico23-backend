@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIVICO23 - Modelo ER Chen Definitivo (17 Entidades - 3FN)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #F8FAFC;
+            --primary: #2563EB;
+            --entity-bg: #E0F2FE;
+            --entity-border: #0EA5E9;
+            --attr-bg: #FFF7ED;
+            --attr-border: #F59E0B;
+            --rel-bg: #F0FDF4;
+            --rel-border: #10B981;
+            --txt: #1E293B;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
+            color: white;
+            padding: 25px 20px;
+            text-align: center;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            background: white;
+            padding: 12px;
+            gap: 12px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            border: none;
+            padding: 12px 24px;
+            background: #F1F5F9;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 700;
+            color: #64748B;
+            border-radius: 12px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .content-area {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+        }
+
+        .sheet {
+            display: none;
+            width: 100%;
+            max-width: 1300px;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .sheet.active { display: flex; }
+
+        .sheet-info {
+            text-align: center;
+            margin-bottom: 25px;
+            padding: 0 20px;
+        }
+
+        .sheet-info h2 { color: #0F172A; margin-bottom: 8px; font-weight: 800; }
+        .sheet-info p { color: #64748B; font-size: 14px; max-width: 600px; margin: auto; }
+
+        .svg-container {
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.05);
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px;
+            border: 1px solid #E2E8F0;
+        }
+
+        svg {
+            display: block;
+            margin: auto;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.02));
+        }
+
+        /* SVG Text Styles */
+        text { fill: var(--txt); pointer-events: none; }
+        .ent { font-weight: 800; font-size: 14px; text-anchor: middle; text-transform: uppercase; letter-spacing: 0.5px; }
+        .att { font-size: 10px; text-anchor: middle; font-weight: 500; }
+        .rel { font-size: 10px; font-weight: 800; text-anchor: middle; fill: #064E3B; text-transform: uppercase; }
+        .card { font-size: 16px; font-weight: 900; fill: #4F46E5; }
+        .pk { text-decoration: underline; font-weight: 800; fill: #1E293B; }
+        .fk { text-decoration: underline; font-style: italic; opacity: 0.9; }
+
+        /* Shapes */
+        rect { fill: var(--entity-bg); stroke: var(--entity-border); stroke-width: 2.5; rx: 6; ry: 6; }
+        ellipse { fill: var(--attr-bg); stroke: var(--attr-border); stroke-width: 1.5; }
+        polygon { fill: var(--rel-bg); stroke: var(--rel-border); stroke-width: 2; }
+        line { stroke: #CBD5E1; stroke-width: 1.5; fill: none; }
+        
+        .cardinality-explanation {
+            margin-top: 30px;
+            padding: 25px;
+            background: #F1F5F9;
+            border-radius: 15px;
+            width: 100%;
+            max-width: 1000px;
+            columns: 2;
+            column-gap: 40px;
+        }
+        .cardinality-explanation h3 { margin-top: 0; color: #1E293B; font-size: 16px; border-bottom: 2px solid #CBD5E1; padding-bottom: 8px; break-after: avoid; }
+        .cardinality-item { margin-bottom: 12px; font-size: 13px; color: #475569; line-height: 1.5; }
+        .cardinality-item b { color: var(--primary); }
+
+        footer {
+            padding: 40px 20px;
+            text-align: center;
+            color: #94A3B8;
+            font-size: 0.85rem;
+            background: white;
+            margin-top: 40px;
+            border-top: 1px solid #E2E8F0;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Diagrama de Entidad-Relación Perfeccionado</h1>
+    <p style="opacity: 0.8; font-weight: 300;">Modelo Normalizado SIVICO23 v4.0 - 17 Entidades en 3ra Forma Normal</p>
+</header>
+
+<div class="tabs">
+    <button class="tab-btn active" onclick="showSheet(0)">Estructura y Cardinalidades</button>
+    <button class="tab-btn" onclick="showSheet(1)">Detalle: Población y Salud</button>
+    <button class="tab-btn" onclick="showSheet(2)">Detalle: Historia y Emergencias</button>
+</div>
+
+<div class="content-area">
+    <!-- ================= HOJA 0: ESTRUCTURA Y CARDINALIDADES ================= -->
+    <div id="sheet0" class="sheet active">
+        <div class="sheet-info">
+            <h2>Mapa Conceptual con Cardinalidad 1:N (17 Entidades)</h2>
+            <p>Representación de las 17 entidades maestras y operativas bajo el estándar SIVICO23 v4.0.</p>
+        </div>
+        <div class="svg-container">
+            <svg width="1100" height="600" viewBox="0 0 1100 600">
+                <!-- Capa 1: Maestras -->
+                <rect x="50" y="50" width="120" height="40" /><text x="110" y="75" class="ent">SECTORES</text>
+                <rect x="350" y="50" width="120" height="40" /><text x="410" y="75" class="ent">USUARIOS</text>
+                <rect x="350" y="150" width="120" height="35" /><text x="410" y="172" class="ent">ROLES</text>
+
+                <line x1="170" y1="70" x2="350" y2="70" /><polygon points="250,70 265,55 280,70 265,85" /><text x="265" y="75" class="rel">UBICA</text>
+                <text x="180" y="60" class="card">1</text><text x="330" y="60" class="card">N</text>
+
+                <line x1="410" y1="90" x2="410" y2="150" /><polygon points="410,110 425,125 410,140 395,125" /><text x="410" y="128" class="rel">ASIGNA</text>
+                <text x="390" y="105" class="card">N</text><text x="390" y="145" class="card">1</text>
+
+                <!-- Capa 2: Operativa -->
+                <rect x="50" y="280" width="120" height="40" /><text x="110" y="305" class="ent">PACIENTES</text>
+                <rect x="350" y="280" width="120" height="40" /><text x="410" y="305" class="ent">REGISTROS</text>
+
+                <line x1="110" y1="90" x2="110" y2="280" /><polygon points="110,175 125,190 110,205 95,190" /><text x="110" y="193" class="rel">RESIDE</text>
+                <text x="90" y="105" class="card">1</text><text x="90" y="270" class="card">N</text>
+
+                <line x1="170" y1="300" x2="350" y2="300" /><polygon points="250,300 265,285 280,300 265,315" /><text x="265" y="305" class="rel">GENERA</text>
+                <text x="180" y="290" class="card">1</text><text x="330" y="290" class="card">N</text>
+
+                <line x1="410" y1="90" x2="410" y2="280" stroke-dasharray="5,5" /><polygon points="410,210 425,225 410,240 395,225" /><text x="410" y="228" class="rel">REALIZA</text>
+                <text x="390" y="105" class="card">1</text><text x="390" y="270" class="card">N</text>
+
+                <!-- Capa 3: Clínica -->
+                <rect x="650" y="280" width="120" height="40" /><text x="710" y="305" class="ent">TRATAMIENTOS</text>
+                <rect x="900" y="280" width="160" height="40" /><text x="980" y="305" class="ent"><tspan x="980" dy="0">patologias_</tspan><tspan x="980" dy="1.3em">cie10</tspan></text>
+                <rect x="900" y="400" width="160" height="35" /><text x="980" y="422" class="ent"><tspan x="980" dy="0">categorias_</tspan><tspan x="980" dy="1.3em">cie10</tspan></text>
+
+                <line x1="470" y1="300" x2="650" y2="300" /><polygon points="550,300 565,285 580,300 565,315" /><text x="565" y="305" class="rel">CONTIENE</text>
+                <text x="485" y="290" class="card">1</text><text x="635" y="290" class="card">N</text>
+
+                <line x1="770" y1="300" x2="900" y2="300" /><polygon points="825,300 840,285 855,300 840,315" /><text x="840" y="305" class="rel">DIAGNOSTICA</text>
+                <text x="785" y="290" class="card">N</text><text x="880" y="290" class="card">1</text>
+
+                <line x1="960" y1="320" x2="960" y2="400" /><polygon points="960,350 975,365 960,380 945,365" /><text x="960" y="368" class="rel">CLASIFICA</text>
+                <text x="940" y="335" class="card">N</text><text x="940" y="390" class="card">1</text>
+
+                <!-- Capa 4: PAI y Discapacidad -->
+                <rect x="320" y="450" width="160" height="40" /><text x="400" y="475" class="ent"><tspan x="400" dy="0">cat_vacunas_</tspan><tspan x="400" dy="1.3em">mpps</tspan></text>
+                <rect x="560" y="450" width="180" height="40" /><text x="650" y="475" class="ent"><tspan x="650" dy="0">registro_</tspan><tspan x="650" dy="1.3em">vacunacion</tspan></text>
+                <rect x="820" y="450" width="180" height="40" /><text x="910" y="475" class="ent"><tspan x="910" dy="0">paciente_</tspan><tspan x="910" dy="1.3em">discapacidades</tspan></text>
+                <rect x="560" y="520" width="180" height="40" /><text x="650" y="545" class="ent"><tspan x="650" dy="0">cat_</tspan><tspan x="650" dy="1.3em">discapacidades</tspan></text>
+
+                <line x1="110" y1="320" x2="560" y2="470" stroke-dasharray="3,3" /><text x="335" y="400" class="rel">VACUNA</text>
+                <line x1="650" y1="470" x2="650" y2="510" stroke-dasharray="3,3" /><text x="650" y="490" class="rel">REGISTRA</text>
+                <line x1="910" y1="510" x2="910" y2="450" /><polygon points="910,470 925,485 910,500 895,485" /><text x="910" y="485" class="rel">VINCULA</text>
+                
+                <rect x="650" y="355" width="120" height="40" /><text x="710" y="380" class="ent">MEDICAMENTOS</text>
+                <line x1="710" y1="320" x2="710" y2="355" /><polygon points="710,335 725,350 710,365 695,350" /><text x="710" y="345" class="rel">RECETA</text>
+                <text x="690" y="330" class="card">1</text><text x="690" y="360" class="card">N</text>
+                <line x1="710" y1="395" x2="710" y2="430" stroke-dasharray="3,3" /><text x="710" y="412" class="rel">MEDICA</text>
+
+                <!-- Capa 5: Gestión Comunitaria -->
+                <rect x="50" y="450" width="200" height="40" /><text x="150" y="475" class="ent"><tspan x="150" dy="0">alertas_</tspan><tspan x="150" dy="1.3em">emergencia</tspan></text>
+                <rect x="50" y="550" width="120" height="40" /><text x="110" y="575" class="ent">jornadas_salud</text>
+                <rect x="350" y="550" width="220" height="40" /><text x="460" y="575" class="ent"><tspan x="460" dy="0">notificaciones_</tspan><tspan x="460" dy="1.3em">usuarios</tspan></text>
+
+                <line x1="110" y1="320" x2="110" y2="450" /><polygon points="110,380 125,395 110,410 95,395" /><text x="110" y="398" class="rel">SOLICITA</text>
+                <line x1="170" y1="570" x2="350" y2="570" /><polygon points="250,570 265,555 280,570 265,585" /><text x="265" y="575" class="rel">AVISA</text>
+            </svg>
+            <div class="cardinality-explanation" style="margin-bottom: 24px;">
+                <h3>Tablas incluidas en el modelo ER</h3>
+                <p>El diagrama incluye todas las tablas activas del proyecto, conforme al esquema de la base de datos actual:</p>
+                <ul class="cardinality-item" style="columns: 2; padding-left: 18px; list-style: disc; margin-top: 16px;">
+                    <li>roles</li>
+                    <li>usuarios</li>
+                    <li>sectores</li>
+                    <li>pacientes</li>
+                    <li>registros</li>
+                    <li>tratamientos</li>
+                    <li>medicamentos</li>
+                    <li>categorias_cie10</li>
+                    <li>patologias_cie10</li>
+                    <li>cat_vacunas_mpps</li>
+                    <li>registro_vacunacion</li>
+                    <li>cat_discapacidades</li>
+                    <li>paciente_discapacidades</li>
+                    <li>alertas_emergencia</li>
+                    <li>jornadas_salud</li>
+                    <li>notificaciones_usuarios</li>
+                    <li>auditoria_pacientes</li>
+                </ul>
+            </div>
+
+            <div class="cardinality-explanation">
+                <h3>Justificación Técnica de Cardinalidades</h3>
+                <div class="cardinality-item"><b>Roles (1:N) Usuarios:</b> Un Rol centraliza permisos para evitar redundancia y garantizar que muchos usuarios tengan el mismo perfil de seguridad.</div>
+                <div class="cardinality-item"><b>Sectores (1:N) Usuarios:</b> La tabla sectores UBICA a n-personal técnico asignado a cada zona territorial.</div>
+                <div class="cardinality-item"><b>Sectores (1:N) Pacientes:</b> El ciudadano RESIDE en un sector específico, permitiendo el control epidemiológico local.</div>
+                <div class="cardinality-item"><b>Pacientes (1:N) Registros:</b> La Historia Clínica del paciente GENERA n-encuentros médicos cargados al sistema.</div>
+                <div class="cardinality-item"><b>Usuarios (1:N) Registros:</b> El profesional de salud REALIZA el registro clínico para auditoría de responsabilidad.</div>
+                <div class="cardinality-item"><b>Registros (1:N) Tratamientos:</b> Un encuentro clínico CONTIENE n-diagnósticos detallados (Modelo 3FN).</div>
+                <div class="cardinality-item"><b>Tratamientos (1:N) Patologías:</b> El diagnóstico DIAGNOSTICA una enfermedad específica del catálogo CIE-10 oficial.</div>
+                <div class="cardinality-item"><b>Categorías (1:N) Patologías:</b> La entidad superior CLASIFICA las enfermedades para reportes gerenciales.</div>
+                <div class="cardinality-item"><b>Tratamientos (1:N) Medicamentos:</b> Cada hallazgo clínico RECETA n-fármacos necesarios para el paciente.</div>
+                <div class="cardinality-item"><b>Pacientes (1:N) Alertas:</b> Ante una emergencia, el paciente SOLICITA una alerta SOS con geolocalización activa.</div>
+                <div class="cardinality-item"><b>Pacientes (1:N) Vacunas:</b> El historial digital PAI refleja todas las dosis INMUNIZA al infante.</div>
+                <div class="cardinality-item"><b>Vacunas Cat (1:N) Vacunas Reg:</b> El catálogo oficial APLICA dosis específicas según el esquema MPPS.</div>
+                <div class="cardinality-item"><b>Jornadas (1:N) Notificaciones:</b> La organización de eventos AVISA automáticamente a los usuarios del sector.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= HOJA 1: POBLACIÓN, SEGURIDAD Y GEOGRAFÍA ================= -->
+    <div id="sheet1" class="sheet">
+        <div class="sheet-info">
+            <h2>Detalle: Población, Seguridad y Geografía (5 Entidades)</h2>
+            <p>Atributos técnicos de Roles, Usuarios, Sectores, Pacientes y Alertas SOS.</p>
+        </div>
+        <div class="svg-container">
+            <svg width="1200" height="900" viewBox="0 0 1200 900">
+                <!-- ROLES -->
+                <rect x="150" y="50" width="130" height="40" /><text x="215" y="75" class="ent">ROLES</text>
+                <ellipse cx="60" cy="50" rx="35" ry="18" /><text x="60" y="53" class="att pk">id</text>
+                <ellipse cx="60" cy="100" rx="40" ry="18" /><text x="60" y="103" class="att">nombre (UQ)</text>
+                <ellipse cx="160" cy="130" rx="45" ry="18" /><text x="160" y="133" class="att">descripcion</text>
+                <line x1="150" y1="70" x2="95" y2="50" /><line x1="150" y1="70" x2="100" y2="100" /><line x1="215" y1="90" x2="160" y2="112" />
+
+                <!-- SECTORES -->
+                <rect x="900" y="50" width="130" height="40" /><text x="965" y="75" class="ent">SECTORES</text>
+                <ellipse cx="1070" cy="50" rx="35" ry="18" /><text x="1070" y="53" class="att pk">id</text>
+                <ellipse cx="1070" cy="100" rx="40" ry="18" /><text x="1070" y="103" class="att">nombre (UQ)</text>
+                <ellipse cx="900" cy="130" rx="35" ry="18" /><text x="900" y="133" class="att">latitud</text>
+                <ellipse cx="980" cy="130" rx="35" ry="18" /><text x="980" y="133" class="att">longitud</text>
+                <line x1="1030" y1="70" x2="1035" y2="50" /><line x1="1030" y1="70" x2="1030" y2="100" /><line x1="965" y1="90" x2="900" y2="112" /><line x1="965" y1="90" x2="980" y2="112" />
+
+                <!-- USUARIOS -->
+                <rect x="500" y="250" width="140" height="50" /><text x="570" y="280" class="ent">USUARIOS</text>
+                <ellipse cx="380" cy="220" rx="35" ry="18" /><text x="380" y="223" class="att pk">id</text>
+                <ellipse cx="380" cy="275" rx="40" ry="18" /><text x="380" y="278" class="att">cedula (UQ)</text>
+                <ellipse cx="380" cy="330" rx="40" ry="18" /><text x="380" y="333" class="att">nombre/apell</text>
+                <ellipse cx="480" cy="380" rx="45" ry="18" /><text x="480" y="383" class="att">email/pass</text>
+                <ellipse cx="660" cy="380" rx="45" ry="18" /><text x="660" y="383" class="att">telefono/rol</text>
+                <ellipse cx="760" cy="275" rx="40" ry="18" /><text x="760" y="278" class="att fk">sector_id</text>
+                <line x1="500" y1="275" x2="415" y2="220" /><line x1="500" y1="275" x2="420" y2="275" /><line x1="500" y1="275" x2="415" y2="320" /><line x1="570" y1="300" x2="480" y2="362" /><line x1="570" y1="300" x2="660" y2="362" /><line x1="640" y1="275" x2="720" y2="275" />
+
+                <!-- PACIENTES -->
+                <rect x="500" y="550" width="140" height="50" /><text x="570" y="580" class="ent">PACIENTES</text>
+                <ellipse cx="350" cy="520" rx="35" ry="18" /><text x="350" y="523" class="att pk">id</text>
+                <ellipse cx="350" cy="570" rx="40" ry="18" /><text x="350" y="573" class="att">cedula/nom</text>
+                <ellipse cx="350" cy="620" rx="40" ry="18" /><text x="350" y="623" class="att">fecha_nac</text>
+                <ellipse cx="450" cy="680" rx="40" ry="18" /><text x="450" y="683" class="att">sexo/tel</text>
+                <ellipse cx="690" cy="680" rx="55" ry="18" /><text x="690" y="683" class="att">ced_repre/sect</text>
+                <ellipse cx="790" cy="570" rx="45" ry="18" /><text x="790" y="573" class="att">direccion</text>
+                <line x1="500" y1="575" x2="385" y2="520" /><line x1="500" y1="575" x2="390" y2="570" /><line x1="500" y1="575" x2="390" y2="620" /><line x1="570" y1="600" x2="450" y2="662" /><line x1="640" y1="575" x2="745" y2="570" /><line x1="640" y1="575" x2="690" y2="662" />
+
+                <!-- ALERTAS SOS -->
+                <rect x="150" y="700" width="130" height="45" /><text x="215" y="728" class="ent">ALERTAS SOS</text>
+                <ellipse cx="60" cy="700" rx="35" ry="18" /><text x="60" y="703" class="att pk">id</text>
+                <ellipse cx="60" cy="750" rx="35" ry="18" /><text x="60" y="753" class="att">tipo/lat/lon</text>
+                <ellipse cx="160" cy="800" rx="45" ry="18" /><text x="160" y="803" class="att">estado/fech</text>
+                <ellipse cx="270" cy="800" rx="45" ry="18" /><text x="270" y="803" class="att">atendida_por</text>
+                <line x1="150" y1="722" x2="95" y2="700" /><line x1="150" y1="722" x2="95" y2="750" /><line x1="215" y1="745" x2="160" y2="782" /><line x1="215" y1="745" x2="270" y2="782" />
+
+                <!-- Relaciones Visuales -->
+                <line x1="215" y1="90" x2="500" y2="275" stroke-dasharray="4,4" /><polygon points="350,180 365,165 380,180 365,195" /><text x="365" y="185" class="rel">ASIGNA</text>
+                <line x1="965" y1="90" x2="640" y2="275" stroke-dasharray="4,4" /><polygon points="770,180 785,165 800,180 785,195" /><text x="785" y="185" class="rel">UBICA</text>
+                <line x1="965" y1="90" x2="640" y2="575" stroke-dasharray="4,4" /><polygon points="780,420 795,405 810,420 795,435" /><text x="795" y="425" class="rel">RESIDE</text>
+                <line x1="570" y1="300" x2="570" y2="550" /><polygon points="570,420 585,435 570,450 555,435" /><text x="570" y="440" class="rel">REALIZA</text>
+                <line x1="500" y1="575" x2="215" y2="700" /><polygon points="350,637 365,622 380,637 365,652" /><text x="365" y="642" class="rel">SOLICITA</text>
+            </svg>
+        </div>
+    </div>
+
+    <!-- ================= HOJA 2: CLÍNICA, TRATAMIENTOS Y CATÁLOGOS ================= -->
+    <div id="sheet2" class="sheet">
+        <div class="sheet-info">
+            <h2>Detalle: Clínica, Tratamientos y Catálogos (5 Entidades)</h2>
+            <p>Atributos técnicos de Registros, Tratamientos, Medicamentos, Patologías y Categorías.</p>
+        </div>
+        <div class="svg-container">
+            <svg width="1200" height="900" viewBox="0 0 1200 900">
+                <!-- REGISTROS -->
+                <rect x="50" y="50" width="130" height="45" /><text x="115" y="78" class="ent">REGISTROS</text>
+                <ellipse cx="60" cy="130" rx="35" ry="18" /><text x="60" y="133" class="att pk">id/codigo</text>
+                <ellipse cx="170" cy="130" rx="40" ry="18" /><text x="170" y="133" class="att">pac_id/fecha</text>
+                <line x1="115" y1="95" x2="60" y2="112" /><line x1="115" y1="95" x2="170" y2="112" />
+
+                <!-- TRATAMIENTOS -->
+                <rect x="400" y="50" width="140" height="45" /><text x="470" y="78" class="ent">TRATAMIENTOS</text>
+                <ellipse cx="400" cy="130" rx="35" ry="18" /><text x="400" y="133" class="att pk">id/reg_id</text>
+                <ellipse cx="540" cy="130" rx="45" ry="18" /><text x="540" y="133" class="att">pat_id/desc</text>
+                <line x1="470" y1="95" x2="400" y2="112" /><line x1="470" y1="95" x2="540" y2="112" />
+
+                <!-- PATOLOGIAS -->
+                <rect x="800" y="50" width="140" height="45" /><text x="870" y="78" class="ent">PATOLOGIAS</text>
+                <ellipse cx="780" cy="130" rx="40" ry="18" /><text x="780" y="133" class="att pk">id/codigo</text>
+                <ellipse cx="880" cy="130" rx="35" ry="18" /><text x="880" y="133" class="att">nombre</text>
+                <ellipse cx="980" cy="130" rx="40" ry="18" /><text x="980" y="133" class="att fk">categ_id</text>
+                <line x1="870" y1="95" x2="780" y2="112" /><line x1="870" y1="95" x2="880" y2="112" /><line x1="870" y1="95" x2="980" y2="112" />
+
+                <!-- CATEGORIAS -->
+                <rect x="800" y="250" width="140" height="45" /><text x="870" y="278" class="ent">CATEGORIAS</text>
+                <ellipse cx="780" cy="330" rx="35" ry="18" /><text x="780" y="333" class="att pk">id/nombre</text>
+                <ellipse cx="920" cy="330" rx="35" ry="18" /><text x="920" y="333" class="att">descripcion</text>
+                <line x1="870" y1="295" x2="780" y2="312" /><line x1="870" y1="295" x2="920" y2="312" />
+
+                <!-- MEDICAMENTOS -->
+                <rect x="400" y="300" width="140" height="50" /><text x="470" y="330" class="ent">MEDICAMENTOS</text>
+                <ellipse cx="300" cy="300" rx="30" ry="18" /><text x="300" y="303" class="att pk">id</text>
+                <ellipse cx="300" cy="350" rx="35" ry="18" /><text x="300" y="353" class="att">nombre</text>
+                <ellipse cx="400" cy="400" rx="45" ry="18" /><text x="400" y="403" class="att">present/dosis</text>
+                <ellipse cx="540" cy="400" rx="45" ry="18" /><text x="540" y="403" class="att">via/dispo/ofic</text>
+                <line x1="400" y1="325" x2="330" y2="300" /><line x1="400" y1="325" x2="335" y2="350" /><line x1="470" y1="350" x2="400" y2="382" /><line x1="470" y1="350" x2="540" y2="382" />
+
+                <!-- Relaciones Visuales -->
+                <line x1="180" y1="70" x2="400" y2="70" /><polygon points="280,70 295,55 310,70 295,85" /><text x="295" y="75" class="rel">CONTIENE</text>
+                <line x1="470" y1="95" x2="470" y2="300" /><polygon points="470,185 485,200 470,215 455,200" /><text x="470" y="205" class="rel">RECETA</text>
+                <line x1="540" y1="70" x2="800" y2="70" /><polygon points="660,70 675,55 690,70 675,85" /><text x="675" y="75" class="rel">DIAGNOSTICA</text>
+                <line x1="870" y1="95" x2="870" y2="250" /><polygon points="870,165 885,180 870,195 855,180" /><text x="870" y="185" class="rel">CLASIFICA</text>
+            </svg>
+        </div>
+    </div>
+
+        </div>
+    </div>
+</div>
+
+<footer>
+    <p><strong>Diseñado para la Defensa y Documentación Final - SIVICO23 v4.0</strong></p>
+    <p>Integridad Referencial • 17 Entidades • Tercera Forma Normal (3FN)</p>
+</footer>
+
+<script>
+    function showSheet(num) {
+        document.querySelectorAll('.sheet').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        
+        document.getElementById('sheet' + num).classList.add('active');
+        document.querySelectorAll('.tab-btn')[num].classList.add('active');
+    }
+</script>
+
+</body>
+</html>
