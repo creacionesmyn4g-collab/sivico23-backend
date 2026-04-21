@@ -1,0 +1,16 @@
+{
+  "name": "miguel-assistant",
+  "version": "0.1.0",
+  "description": "Asistente 'miguel' para ejecutar pruebas y comprobaciones del proyecto SIVICO23",
+  "main": "miguel.js",
+  "scripts": {
+    "start": "node miguel.js",
+    "check": "node miguel.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "pg": "^8.11.0"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "endpoints": [
+    { "name": "Health Render", "url": "https://sivico23-backend.onrender.com/api/health" }
+  ],
+  "commands": [
+    { "name": "Backend tests", "cmd": "npm test", "cwd": "backend" }
+  ]
+}
