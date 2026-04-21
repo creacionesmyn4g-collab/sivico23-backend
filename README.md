@@ -1,542 +1,521 @@
-# 🏥 SIVICO23 - SISTEMA INTEGRAL DE VIGILANCIA COMUNITARIA (V3.1)
+# 🏥 SIVICO23 - Backend API
 
-## Proyecto Final de Graduación TSU en Informática
-### Backend Cloud + Frontend Mobile + Cartografía Comunitaria
+## Sistema de Vigilancia y Control de Salud Comunitaria - Fase 2
 
----
-
-## 📦 ESTRUCTURA DEL PROYECTO
-
-```
-SIVICO23_FASE2_FINAL/
-├── 📱 frontend/                    # App móvil React Native (Expo)
-│   ├── src/
-│   │   ├── screens/
-│   │   │   ├── DashboardScreen.js # ✅ Dashboard con ErrorBoundary (v3.1)
-│   │   │   └── RegistroScreen.js  # ✅ Registro multi-patología
-│   │   ├── components/
-│   │   │   └── LeafletMap.js      # ✅ Cartografía Profesional (Leaflet + GeoJSON) v3.2
-│   │   ├── data/
-│   │   │   └── patologias.js      # ✅ Catálogo 11k patologías CIE-10
-│   │   └── docs/                  # 📚 Informes técnicos y validaciones
-│   │
-│   ├── app.json                   # Configuración Expo
-│   └── package.json               # Dependencias (React Native 0.81)
-│
-├── 🖥️ backend/                     # Servidor Node.js + PostgreSQL
-│   ├── DOCUMENTO_TSU.md
-│   └── CHANGELOG.md
-│
-└── 📄 README.md                    # ← Este archivo
-```
+Backend RESTful con Node.js + Express + PostgreSQL para sincronización de datos del sistema móvil SIVICO23.
 
 ---
 
-## 🎯 ¿QUÉ HAY DE NUEVO EN FASE 2?
+## 📋 REQUISITOS
 
-### **Frontend (App Móvil):**
-
-| Característica | Fase 1 | Fase 2 ✅ |
-|----------------|--------|-----------|
-| **SDK Expo** | 51 | **54** |
-| **Búsqueda de paciente** | ❌ | ✅ Por cédula |
-| **Patologías por registro** | 1 | **∞ (ilimitadas)** |
-| **Medicamentos por patología** | 1 | **∞ (ilimitados)** |
-| **Presentaciones medicamento** | Fija | **2-5 opciones** |
-| **Selector de dosis** | ❌ | ✅ Por presentación |
-| **Total patologías** | ~10 | **43 con CIE-10** |
-| **Total medicamentos** | ~30 | **150+ con MPPS/IVSS** |
-| **Sincronización** | ❌ | ✅ Con servidor |
-| **Autenticación** | ❌ | ✅ JWT |
-| **Roles de usuario** | ❌ | ✅ 4 roles |
-| **Dashboard Analítico** | ❌ | ✅ Sectores, Brechas y Triaje |
-| **Fusión de Catálogo** | ❌ | ✅ Consolidación de medicinas |
-
-### **Backend (Servidor):**
-
-✅ **Node.js 18.x + Express 4.18**
-✅ **PostgreSQL 14+ con 6 tablas**
-✅ **API REST con 15 endpoints**
-✅ **Autenticación JWT**
-✅ **Sistema de roles** (admin, médico, promotor, ciudadano)
-✅ **Sincronización offline→online**
-✅ **Estadísticas en tiempo real**
-✅ **Geolocalización de emergencias**
-
-### **Base de Datos:**
-
-✅ **43 patologías clasificadas CIE-10**
-✅ **11 categorías médicas**
-✅ **150+ medicamentos del Cuadro Básico MPPS/IVSS**
-✅ **Múltiples presentaciones por medicamento**
-✅ **Modelo ER normalizado (3FN)**
-✅ **20 índices para optimización**
-✅ **Vistas materializadas**
-✅ **Row-Level Security (RLS)**
+- **Node.js:** v18.0.0 o superior
+- **PostgreSQL:** v14.0 o superior
+- **npm:** v9.0.0 o superior
 
 ---
 
-## 🚀 INSTALACIÓN RÁPIDA (15 MINUTOS)
-
-### **Requisitos Previos:**
-- ✅ Node.js 18+
-- ✅ PostgreSQL 14+
-- ✅ Expo Go en teléfono
-- ✅ Git (opcional)
-
-### **Paso 1: Instalar Base de Datos**
+## 🚀 INSTALACIÓN RÁPIDA
 
 ```bash
-# Iniciar PostgreSQL
-# Windows: Ya debe estar corriendo si lo instalaste
-# Mac: brew services start postgresql
-# Linux: sudo systemctl start postgresql
+# 1. Clonar/Extraer archivos
+cd SIVICO23_FASE2_BACKEND
 
-# Crear base de datos
+# 2. Instalar dependencias
+npm install
+
+# 3. Configurar base de datos
 psql -U postgres
 CREATE DATABASE sivico23_db;
 \c sivico23_db
-\i backend/schema.sql
+\i schema.sql
 \q
-```
 
-### **Paso 2: Configurar Backend**
-
-```bash
-cd backend
-
-# Instalar dependencias
-npm install
-
-# Configurar variables de entorno
+# 4. Configurar variables de entorno
 cp .env.example .env
 nano .env  # Editar con tus credenciales
 
-# Contenido de .env:
-# DB_USER=postgres
-# DB_HOST=localhost
-# DB_NAME=sivico23_db
-# DB_PASSWORD=tu_password
-# DB_PORT=5432
-# JWT_SECRET=sivico23_secret_2026
-# PORT=3000
-
-# Iniciar servidor
+# 5. Iniciar servidor
 npm start
-
-# Debes ver:
-# ╔════════════════════════════════════════╗
-# ║   SIVICO23 FASE 2 — Backend API       ║
-# ║   Puerto: 3000                         ║
-# ║   PostgreSQL: Conectado ✓              ║
-# ╚════════════════════════════════════════╝
 ```
 
-### **Paso 3: Configurar Frontend**
+---
 
-```bash
-# En OTRA terminal
-cd frontend
+## 📁 ESTRUCTURA DEL PROYECTO
 
-# Instalar dependencias
-npm install
-
-# Obtener tu IP local
-# Windows: ipconfig
-# Mac/Linux: ifconfig
-
-# Editar src/utils/api.js
-nano src/utils/api.js
-
-# Cambiar línea 5:
-# const API_URL = 'http://TU_IP_AQUI:3000/api';
-# Ejemplo: const API_URL = 'http://192.168.1.10:3000/api';
-
-# Iniciar app
-npx expo start
-
-# Escanear QR con Expo Go
+```
+SIVICO23_FASE2_BACKEND/
+├── server.js              # Servidor principal (Express)
+├── database.sql           # Esquema completo de la base de datos (PostgreSQL)
+├── package.json           # Lista de dependencias del proyecto (npm)
+├── package-lock.json      # ¡Importante! Fija las versiones exactas de las dependencias para evitar que el servidor falle si una librería se actualiza en el futuro.
+├── .env.example           # Plantilla de variables de entorno
+├── README.md              # Documentación técnica
+└── logs/                  # Logs estandarizados
 ```
 
-### **Paso 4: Probar Todo**
+---
+
+## 🔌 ENDPOINTS DE LA API
+
+### **Autenticación**
+
+#### `POST /api/auth/register`
+Registrar nuevo usuario
+
+**Body:**
+```json
+{
+  "cedula": "V-12345678",
+  "nombre": "Juan",
+  "apellido": "Pérez",
+  "email": "juan@example.com",
+  "password": "contraseña123",
+  "rol": "vocero"
+}
+```
+
+**Respuesta:**
+```json
+{
+  "message": "Usuario registrado exitosamente",
+  "usuario": {
+    "id": 1,
+    "cedula": "V-12345678",
+    "nombre": "Juan",
+    "apellido": "Pérez",
+    "rol": "vocero"
+  }
+}
+```
+
+#### `POST /api/auth/login`
+Iniciar sesión
+
+**Body:**
+```json
+{
+  "cedula": "V-12345678",
+  "password": "contraseña123"
+}
+```
+
+**Respuesta:**
+```json
+{
+  "message": "Login exitoso",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "usuario": {
+    "id": 1,
+    "cedula": "V-12345678",
+    "nombre": "Juan",
+    "apellido": "Pérez",
+    "rol": "vocero"
+  }
+}
+```
+
+---
+
+### **Pacientes**
+
+#### `GET /api/pacientes`
+Listar todos los pacientes
+
+**Headers:**
+```
+Authorization: Bearer {token}
+```
+
+**Query params:**
+- `limit`: Número de resultados (default: 50)
+- `offset`: Página (default: 0)
+- `busqueda`: Texto a buscar en nombre/cédula
+
+**Respuesta:**
+```json
+{
+  "pacientes": [
+    {
+      "id": 1,
+      "cedula": "V-8123456",
+      "nombre": "María",
+      "apellido": "Rodríguez",
+      "edad": 45,
+      "sexo": "Femenino",
+      "telefono": "0414-1234567",
+      "sector": "Zona Central"
+    }
+  ],
+  "total": 1
+}
+```
+
+#### `GET /api/pacientes/:cedula`
+Buscar paciente por cédula
+
+**Respuesta:**
+```json
+{
+  "id": 1,
+  "cedula": "V-8123456",
+  "nombre": "María",
+  "apellido": "Rodríguez",
+  "edad": 45
+}
+```
+
+#### `POST /api/pacientes`
+Crear nuevo paciente
+
+**Body:**
+```json
+{
+  "cedula": "V-8123456",
+  "nombre": "María",
+  "apellido": "Rodríguez",
+  "edad": 45,
+  "sexo": "Femenino",
+  "telefono": "0414-1234567"
+}
+```
+
+---
+
+### **Registros Médicos**
+
+#### `POST /api/registros`
+Crear registro médico completo
+
+**Body:**
+```json
+{
+  "codigo": "SIV-2026-12345",
+  "paciente_cedula": "V-8123456",
+  "tratamientos": [
+    {
+      "categoria": {
+        "nombre": "Cardiovasculares",
+        "icono": "🫀"
+      },
+      "patologia": {
+        "nombre": "Hipertensión Arterial",
+        "cie10": "I10"
+      },
+      "medicamentos": [
+        {
+          "nombre": "Enalapril",
+          "presentacion_seleccionada": {
+            "mg": "10",
+            "forma": "Tableta"
+          },
+          "dosis_seleccionada": {
+            "label": "10 mg c/12h",
+            "valor": "1 tableta de 10mg cada 12 horas"
+          },
+          "via": "Oral",
+          "disponibilidad": "MPPS / IVSS"
+        }
+      ]
+    }
+  ]
+}
+```
+
+#### `GET /api/registros`
+Listar registros
+
+**Query params:**
+- `paciente_cedula`: Filtrar por paciente
+- `limit`: Número de resultados
+- `offset`: Página
+
+#### `GET /api/registros/:id`
+Obtener detalle completo de un registro
+
+---
+
+### **Estadísticas**
+
+#### `GET /api/estadisticas`
+Dashboard con estadísticas generales
+
+**Respuesta:**
+```json
+{
+  "total_registros": 1200,
+  "total_pacientes": 450,
+  "registros_hoy": 15,
+  "patologias_comunes": [
+    { "patologia": "Hipertensión Arterial", "total": 320 },
+    { "patologia": "Diabetes Mellitus Tipo 2", "total": 180 }
+  ],
+  "medicamentos_comunes": [
+    { "nombre": "Enalapril", "total": 280 },
+    { "nombre": "Metformina", "total": 150 }
+  ]
+}
+```
+
+---
+
+### **Sincronización**
+
+#### `POST /api/sync`
+Sincronizar múltiples registros offline
+
+**Body:**
+```json
+{
+  "registros_offline": [
+    {
+      "codigo": "SIV-2026-12345",
+      "fecha": "2026-02-18T10:30:00.000Z",
+      "paciente": {
+        "cedula": "V-8123456",
+        "nombre": "María",
+        "apellido": "Rodríguez",
+        "edad": 45
+      },
+      "tratamientos": [...]
+    }
+  ]
+}
+```
+
+**Respuesta:**
+```json
+{
+  "message": "Sincronización completada",
+  "resultados": [
+    {
+      "codigo_offline": "SIV-2026-12345",
+      "id_servidor": 234,
+      "status": "sincronizado"
+    }
+  ]
+}
+```
+
+---
+
+## 🔐 SEGURIDAD
+
+### **Autenticación JWT**
+
+Todos los endpoints (excepto `/auth/login` y `/auth/register`) requieren token JWT en el header:
+
+```
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+### **Roles de Usuario**
+
+- **admin:** Acceso completo al sistema, fusiones, catálogos y métricas.
+- **medico:** Visualización global de historiales clínicos y empadronamiento.
+- **vocero:** (Vocero Comunal) Empadronamiento y carga de encuestas de salud enfocadas en su sector asignado.
+
+### **Rate Limiting**
+
+- Máximo 100 peticiones por 15 minutos por IP
+- Excepciones para endpoints críticos
+
+---
+
+## 🗄️ BASE DE DATOS
+
+### **Estructura Dinámica (17 Tablas):**
+
+El sistema cuenta con un esquema relacional profundo distribuido en 17 tablas activas:
+
+1. **roles** - Roles del sistema
+2. **categorias_cie10** - Clasificación principal CIE-10
+3. **sectores** - Polígonos y sectores del Eje Comunal
+4. **patologias_cie10** - Diccionario médico internacional
+5. **usuarios** - Credenciales (Admin, Médico, Vocero)
+6. **pacientes** - Datos demográficos e identidad
+7. **registros** - Cabecera de atención médica (Fecha, Médico)
+8. **tratamientos** - Diagnóstico cruzado entre Paciente y Patología
+9. **medicamentos** - Prescripciones detalladas asociadas al tratamiento
+10. **alertas_emergencia** - Sistema SOS Georreferenciado
+11. **cat_discapacidades** - Catálogo oficial CONAPDIS
+12. **paciente_discapacidades** - Relación Paciente-Discapacidad
+13. **cat_vacunas_mpps** - Esquema PAI Nacional
+14. **registro_vacunacion** - Dosis aplicadas (Módulo Pediátrico)
+15. **jornadas_salud** - Planificación de despliegues comunitarios
+16. **notificaciones_usuarios** - Sistema de buzón de alertas
+17. **auditoria_pacientes** - Historial inmutable de cambios críticos
+
+### **Relaciones Principales:**
+
+```
+sectores (1) ──< (N) pacientes
+usuarios (1) ──< (N) registros
+pacientes (1) ──< (N) registros
+registros (1) ──< (N) tratamientos
+tratamientos (1) ──< (N) medicamentos
+```
+
+### **Respaldo Automático:**
 
 ```bash
-# 1. Login
-Usuario: V-00000000
-Password: admin123
+# Configurar en crontab
+0 2 * * * pg_dump sivico23_db > /var/backups/sivico23/backup_$(date +\%Y\%m\%d).sql
+```
 
-# 2. Crear un registro
-- Ir a "Registro"
-- Seleccionar múltiples patologías
-- Seleccionar medicamentos con dosis
-- Guardar
+---
 
-# 3. Sincronizar
-- Ir a "Inicio"
-- Tocar "Sincronizar con Servidor"
-- Ver mensaje de éxito
+## 🧪 PRUEBAS
 
-# 4. Verificar en BD
+### **Prueba Manual con cURL:**
+
+```bash
+# Login
+curl -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"cedula":"V-00000000","password":"admin123"}'
+
+# Obtener estadísticas (reemplazar TOKEN)
+curl http://localhost:3000/api/estadisticas \
+  -H "Authorization: Bearer TOKEN"
+```
+
+### **Prueba con Thunder Client (VS Code):**
+
+1. Instalar extensión "Thunder Client"
+2. Importar colección desde `SIVICO23_API.json`
+3. Configurar variable de entorno `baseUrl`
+4. Ejecutar requests
+
+---
+
+## 📊 MONITOREO
+
+### **Logs:**
+
+```bash
+# Ver logs en tiempo real
+tail -f logs/sivico23.log
+
+# Logs de PostgreSQL
+tail -f /var/log/postgresql/postgresql-14-main.log
+```
+
+### **Estado del servidor:**
+
+```bash
+# Verificar que está corriendo
+curl http://localhost:3000/health
+
+# Respuesta esperada:
+# {"status":"ok","database":"connected"}
+```
+
+---
+
+## 🚀 DESPLIEGUE EN PRODUCCIÓN
+
+### **Opción 1: VPS (Ubuntu)**
+
+```bash
+# 1. Instalar Node.js y PostgreSQL
+sudo apt update
+sudo apt install nodejs npm postgresql
+
+# 2. Clonar proyecto
+git clone https://github.com/tu-repo/sivico23-backend.git
+cd sivico23-backend
+
+# 3. Instalar PM2 (gestor de procesos)
+sudo npm install -g pm2
+
+# 4. Configurar .env con credenciales de producción
+
+# 5. Iniciar con PM2
+pm2 start server.js --name sivico23-api
+pm2 save
+pm2 startup
+
+# 6. Configurar Nginx como reverse proxy
+sudo apt install nginx
+# ... configuración de Nginx
+```
+
+### **Opción 2: Docker**
+
+```dockerfile
+FROM node:18-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+COPY . .
+EXPOSE 3000
+CMD ["npm", "start"]
+```
+
+```bash
+docker build -t sivico23-backend .
+docker run -p 3000:3000 --env-file .env sivico23-backend
+```
+
+---
+
+## 📞 TROUBLESHOOTING
+
+### **Error: "Cannot connect to PostgreSQL"**
+
+```bash
+# Verificar que PostgreSQL está corriendo
+sudo systemctl status postgresql
+
+# Iniciar si está detenido
+sudo systemctl start postgresql
+
+# Verificar credenciales en .env
 psql -U postgres -d sivico23_db
-SELECT * FROM registros;
-\q
 ```
 
----
+### **Error: "Port 3000 already in use"**
 
-## 📖 DOCUMENTACIÓN INCLUIDA
-
-### **1. Guías de Instalación:**
-
-| Archivo | Descripción |
-|---------|-------------|
-| `GUIA_INSTALACION_COMPLETA.md` | Paso a paso detallado (Windows/Mac/Linux) |
-| `INSTALACION_BACKEND.md` | Configuración del servidor |
-| `INSTALACION_FRONTEND.md` | Configuración de la app móvil |
-| `TROUBLESHOOTING.md` | Solución de problemas comunes |
-
-### **2. Guías Técnicas:**
-
-| Archivo | Descripción |
-|---------|-------------|
-| `API_REFERENCE.md` | Documentación de endpoints |
-| `DATABASE_SCHEMA.md` | Estructura de base de datos |
-| `DIAGRAMA_ER.md` | Modelo entidad-relación |
-| `ARQUITECTURA.md` | Diagrama de arquitectura |
-
-### **3. Para el Documento TSU:**
-
-| Archivo | Descripción |
-|---------|-------------|
-| `CAPITULO_V_PROPUESTA.md` | Sección lista para copiar |
-| `CAPITULO_VI_RESULTADOS.md` | Pruebas y validación |
-| `METODOLOGIA.md` | Marco metodológico |
-| `REFERENCIAS.md` | Bibliografía APA 7 |
-
-### **4. Capacitación Socio-Tecnológica (NUEVO):**
-
-Estos documentos fueron diseñados en HTML interactivo y full-color, listos para imprimir en PDF y entregar a la comunidad:
-
-| Archivo | Descripción |
-|---------|-------------|
-| `documentos_sociotecnologicos/Guia_de_Instalacion.html` | Guía visual didáctica para instalar el sistema |
-| `documentos_sociotecnologicos/Manual_de_Usuario.html` | Enseñanza del flujo de la app por roles |
-| `documentos_sociotecnologicos/Taller_de_Capacitacion_Comunitaria.html` | 4 Módulos de clase para voceros y médicos |
-
----
-
-## 🗄️ BASE DE DATOS COMPLETA
-
-### **43 Patologías con CIE-10:**
-
-#### **Cardiovasculares (5):**
-- I10 - Hipertensión Arterial
-- I50 - Insuficiencia Cardíaca
-- I20 - Angina de Pecho
-- I49 - Arritmias Cardíacas
-- E78 - Dislipidemia
-
-#### **Metabólicas (5):**
-- E11 - Diabetes Mellitus Tipo 2
-- E10 - Diabetes Mellitus Tipo 1
-- E03 - Hipotiroidismo
-- E05 - Hipertiroidismo
-- E66 - Obesidad
-
-#### **Respiratorias (5):**
-- J45 - Asma Bronquial
-- J44 - EPOC
-- J20 - Bronquitis Aguda
-- J18 - Neumonía
-- A15 - Tuberculosis Pulmonar
-
-#### **Gastrointestinales (8):**
-- K29 - Gastritis
-- K27 - Úlcera Péptica
-- K21 - ERGE
-- K58 - Síndrome Intestino Irritable
-- K59.0 - Estreñimiento
-- K59.1 - Diarrea Aguda
-- B82 - Parasitosis Intestinal
-- K70.1 - Hepatitis Alcohólica
-
-#### **Musculoesqueléticas (5):**
-- M05 - Artritis Reumatoide
-- M19 - Osteoartritis
-- M10 - Gota
-- M81 - Osteoporosis
-- M54.5 - Lumbalgia
-
-#### **Neurológicas (7):**
-- G40 - Epilepsia
-- G43 - Migraña
-- F41.1 - Ansiedad
-- F32 - Depresión
-- F51.0 - Insomnio
-- G20 - Parkinson
-- F00 - Demencia/Alzheimer
-
-#### **Dermatológicas (5):**
-- L20 - Dermatitis Atópica
-- L40 - Psoriasis
-- L70 - Acné Vulgar
-- B86 - Escabiosis (Sarna)
-- B37.2 - Candidiasis Cutánea
-
-#### **Oftalmológicas/ORL (5):**
-- H10 - Conjuntivitis
-- H40 - Glaucoma
-- H66 - Otitis Media
-- J30 - Rinitis Alérgica
-- J02 - Faringitis Aguda
-
-#### **Ginecológicas/Urológicas (5):**
-- N39.0 - Infección Vías Urinarias
-- N76.0 - Vaginosis Bacteriana
-- B37.3 - Candidiasis Vaginal
-- N40 - Hiperplasia Prostática
-- N94.6 - Dismenorrea
-
-#### **Hematológicas (2):**
-- D50 - Anemia Ferropénica
-- D51 - Anemia Megaloblástica
-
-#### **Infecciosas (5):**
-- A90 - Dengue
-- B54 - Malaria
-- B24 - VIH/SIDA
-- U07.1 - COVID-19
-- B57 - Enfermedad de Chagas
-
----
-
-## 🔌 API ENDPOINTS
-
-### **Autenticación:**
-- `POST /api/auth/register` - Registrar usuario
-- `POST /api/auth/login` - Iniciar sesión
-
-### **Pacientes:**
-- `GET /api/pacientes` - Listar todos
-- `GET /api/pacientes/:cedula` - Buscar por cédula
-- `POST /api/pacientes` - Crear nuevo
-
-### **Registros Médicos:**
-- `POST /api/registros` - Crear registro completo
-- `GET /api/registros` - Listar registros
-- `GET /api/registros/:id` - Obtener detalle
-
-### **Estadísticas:**
-- `GET /api/estadisticas` - Dashboard estadísticas
-
-### **Sincronización:**
-- `POST /api/sync` - Sincronizar registros offline
-
----
-
-## 📊 ARQUITECTURA DEL SISTEMA
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    CAPA DE PRESENTACIÓN                     │
-│   ┌──────────────────────────────────────────────────┐     │
-│   │  App Móvil (React Native + Expo SDK 54)         │     │
-│   │  - Multi-patología                               │     │
-│   │  - Selector de dosis                             │     │
-│   │  - Offline-first con AsyncStorage                │     │
-│   │  - Sincronización bajo demanda                   │     │
-│   └──────────────────────────────────────────────────┘     │
-└──────────────────────┬──────────────────────────────────────┘
-                       │ HTTP/JSON
-                       │ WiFi/4G
-                       ▼
-┌─────────────────────────────────────────────────────────────┐
-│                  CAPA DE LÓGICA DE NEGOCIO                  │
-│   ┌──────────────────────────────────────────────────┐     │
-│   │  Backend API (Node.js + Express)                 │     │
-│   │  - Autenticación JWT                             │     │
-│   │  - Control de acceso por roles                   │     │
-│   │  - Validación de datos                           │     │
-│   │  - Lógica de sincronización                      │     │
-│   └──────────────────────────────────────────────────┘     │
-└──────────────────────┬──────────────────────────────────────┘
-                       │ SQL
-                       │ pg Pool
-                       ▼
-┌─────────────────────────────────────────────────────────────┐
-│                      CAPA DE DATOS                          │
-│   ┌──────────────────────────────────────────────────┐     │
-│   │  PostgreSQL 14+                                  │     │
-│   │  - 6 tablas principales                          │     │
-│   │  - 20 índices optimizados                        │     │
-│   │  - Vistas materializadas                         │     │
-│   │  - Row-Level Security                            │     │
-│   └──────────────────────────────────────────────────┘     │
-└─────────────────────────────────────────────────────────────┘
-```
-
----
-
-## 🎓 PARA TU DEFENSA DE TSU
-
-### **Demostración en Vivo (10 minutos):**
-
-**1. Backend funcionando (2 min):**
-- Mostrar terminal con servidor activo
-- Explicar puerto 3000, PostgreSQL conectado
-
-**2. Base de datos poblada (2 min):**
-- Abrir pgAdmin
-- Mostrar tablas con datos
-- Ejecutar query: `SELECT * FROM registros;`
-
-**3. App móvil funcionando (3 min):**
-- Login en la app
-- Crear registro con múltiples patologías
-- Seleccionar medicamentos con dosis
-- Guardar
-
-**4. Sincronización (2 min):**
-- Tocar botón "Sincronizar"
-- Mostrar mensaje de éxito
-- Verificar en pgAdmin que aparece el dato
-
-**5. Estadísticas (1 min):**
-- Mostrar dashboard con números
-- Patologías más comunes
-- Medicamentos más prescritos
-
-### **Preguntas Frecuentes y Respuestas:**
-
-**Q: ¿Por qué React Native?**
-A: "Permite desarrollo multiplataforma (Android/iOS) con un solo código base, reduciendo tiempo y costo. Expo facilita testing sin compilar APK."
-
-**Q: ¿Por qué PostgreSQL y no MySQL?**
-A: "PostgreSQL ofrece mejor soporte para funciones avanzadas, cumple normativas CNTI de software libre, y es estándar en proyectos gubernamentales venezolanos."
-
-**Q: ¿Cómo garantizan seguridad?**
-A: "JWT con expiración 7 días, bcrypt 10 rounds para passwords, sanitización SQL injection, CORS restrictivo, Row-Level Security por rol."
-
-**Q: ¿Qué pasa si no hay internet?**
-A: "App funciona 100% offline con AsyncStorage. Al recuperar WiFi, botón de sincronización envía datos acumulados al servidor mediante endpoint /api/sync."
-
-**Q: ¿Escalabilidad?**
-A: "Diseñado para 50 promotores concurrentes, 5000 pacientes, 20000 registros/año. Connection pooling, índices optimizados, paginación en listados."
-
----
-
-## 📋 CHECKLIST DE ENTREGA
-
-### **Archivos Técnicos:**
-- [ ] Código fuente frontend (carpeta `frontend/`)
-- [ ] Código fuente backend (carpeta `backend/`)
-- [ ] Script SQL completo (`backend/schema.sql`)
-- [ ] Archivo README.md principal
-- [ ] Archivo .env.example
-- [ ] package.json de ambos proyectos
-
-### **Documentación:**
-- [ ] Diagrama ER (imagen + código Mermaid)
-- [ ] Diagrama de arquitectura
-- [ ] Manual de instalación
-- [ ] Manual de usuario
-- [ ] Documentación de API
-- [ ] Capítulos V y VI actualizados
-
-### **Evidencias:**
-- [ ] Capturas: Terminal con backend corriendo
-- [ ] Capturas: pgAdmin con datos
-- [ ] Capturas: App - Login
-- [ ] Capturas: App - Registro multi-patología
-- [ ] Capturas: App - Sincronización
-- [ ] Video demo (5 min) mostrando flujo completo
-
-### **Presentación:**
-- [ ] Diapositivas de defensa (PPT/PDF)
-- [ ] Diagrama ER en alta resolución
-- [ ] Script de demostración paso a paso
-- [ ] Lista de preguntas frecuentes con respuestas
-
----
-
-## 🔧 SOLUCIÓN DE PROBLEMAS
-
-### **Backend no inicia:**
 ```bash
-# Verificar PostgreSQL
-pg_isready
-# Si falla: sudo systemctl start postgresql
+# Encontrar proceso usando puerto 3000
+lsof -i :3000
 
-# Ver logs
-npm start 2>&1 | tee backend.log
+# Matar proceso (reemplazar PID)
+kill -9 PID
 
-# Verificar .env
-cat .env
+# O cambiar puerto en .env
+PORT=3001
 ```
 
-### **App no conecta al backend:**
-```bash
-# 1. Verificar IP en src/utils/api.js
-# 2. Teléfono y PC en misma WiFi
-# 3. Backend corriendo (puerto 3000)
-# 4. Firewall no bloquea puerto 3000
-```
+### **Error: "JWT malformed"**
 
-### **Error al sincronizar:**
-```bash
-# Verificar token JWT
-# Login de nuevo en la app
-# Verificar endpoint /api/sync activo
-curl http://localhost:3000/api/estadisticas
-```
+- Verificar que el token se envía en header `Authorization: Bearer TOKEN`
+- Token debe ser el completo sin espacios
+- Token expira en 7 días, generar nuevo con `/auth/login`
 
 ---
 
-## 📞 SOPORTE
+## 📄 LICENCIA
 
-Para problemas durante instalación o configuración:
-
-1. **Revisar esta documentación completa**
-2. **Consultar `TROUBLESHOOTING.md`**
-3. **Verificar logs** del backend
-4. **Limpiar caché**: `npx expo start -c`
-5. **Reinstalar** dependencias si es necesario
+Proyecto Sociotecnológico - PNF Informática
 
 ---
 
-## 📈 PRÓXIMOS PASOS
+## 👥 AUTORES
 
-1. **Descomprimir** este paquete
-2. **Leer** `GUIA_INSTALACION_COMPLETA.md`
-3. **Instalar** PostgreSQL
-4. **Configurar** backend
-5. **Probar** frontend
-6. **Sincronizar** datos
-7. **Tomar evidencias** para documento
-8. **Actualizar** Capítulos V y VI
-9. **Preparar** presentación de defensa
-10. **¡GRADUARTE!** 🎓
+- Proyecto: SIVICO23 (Sistema de Vigilancia y Control Comunitario)
+- Comunidad: Eje Territorial Comunal
+- Institución: Universidad Politécnica Territorial "Andrés Eloy Blanco" (UPTAEB)
+- Año: 2026
 
 ---
 
-## 🎉 ¡SISTEMA COMPLETO Y LISTO!
+## 📧 CONTACTO
 
-Este paquete contiene **TODO** lo necesario para:
-- ✅ Implementar sistema completo
-- ✅ Demostrar en defensa
-- ✅ Documentar en informe TSU
-- ✅ Cumplir requisitos académicos
-- ✅ **GRADUARTE**
+Para soporte técnico o preguntas sobre el proyecto:
+- Email: sivico23@proyecto.ve
+- GitHub: github.com/sivico23
 
 ---
 
-**Versión:** 2.0 - Fase 2 Completa  
-**Fecha:** Febrero 2026  
-**Proyecto:** SIVICO23 - Sistema de Vigilancia y Control de Salud Comunitaria  
-**Comunidad:** 23 de Enero, Caracas, Venezuela  
-**Institución:** IUTEPAL / UPTAEB  
-**Nivel:** TSU en Informática
-
----
-
-**¡Éxito en tu graduación!** 🚀🇻🇪
+**¡Sistema operativo y listo para graduación!** 🎓🇻🇪

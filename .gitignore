@@ -1,0 +1,6 @@
+node_modules/
+.env
+*.log
+migrate_to_supabase.js
+Importante sivico.txt
+contraseña supa base.txt
