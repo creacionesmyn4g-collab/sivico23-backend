@@ -2494,6 +2494,106 @@ app.get('/api/discapacidades/catalogo', authenticateToken, async (req, res) => {
 });
 
 // ============================================================
+// IA Y ALERTAS PREDICTIVAS (FASE 1 Y 2)
+// ============================================================
+
+app.get('/api/ia/alertas-predictivas', authenticateToken, authorizeRoles('admin', 'medico', 'vocero'), async (req, res) => {
+  try {
+    const alertas = [];
+    
+    // 1. Pacientes sin seguimiento > 30 días
+    const queryPacientesSinSeguimiento = `
+      SELECT p.id, p.nombre, p.apellido, MAX(r.fecha) as ultima_fecha
+      FROM pacientes p
+      JOIN registros r ON p.id = r.paciente_id
+      WHERE p.activo = true
+      GROUP BY p.id, p.nombre, p.apellido
+      HAVING MAX(r.fecha) < CURRENT_DATE - INTERVAL '30 days'
+      ORDER BY ultima_fecha ASC
+      LIMIT 10
+    `;
+    const resSinSeguimiento = await pool.query(queryPacientesSinSeguimiento);
+    if (resSinSeguimiento.rows.length > 0) {
+      alertas.push({
+        tipo: 'seguimiento',
+        nivel: 'media',
+        titulo: 'Pacientes sin seguimiento',
+        mensaje: `Hay ${resSinSeguimiento.rows.length} pacientes que no asisten a consulta desde hace más de 30 días.`
+      });
+    }
+
+    // 2. Incremento inusual de patologías en la última semana
+    const queryBrotes = `
+      SELECT s.nombre as sector, pc.nombre as patologia, COUNT(t.id) as casos_recientes
+      FROM tratamientos t
+      JOIN registros r ON t.registro_id = r.id
+      JOIN pacientes p ON r.paciente_id = p.id
+      JOIN sectores s ON p.sector_id = s.id
+      JOIN patologias_cie10 pc ON t.patologia_id = pc.id
+      WHERE r.fecha >= CURRENT_DATE - INTERVAL '7 days'
+      GROUP BY s.nombre, pc.nombre
+      HAVING COUNT(t.id) >= 3
+      ORDER BY casos_recientes DESC
+    `;
+    const resBrotes = await pool.query(queryBrotes);
+    if (resBrotes.rows.length > 0) {
+      resBrotes.rows.forEach(brote => {
+        alertas.push({
+          tipo: 'brote',
+          nivel: 'alta',
+          titulo: 'Posible Brote Detectado',
+          mensaje: `Se registraron ${brote.casos_recientes} casos recientes de ${brote.patologia} en el sector ${brote.sector}.`
+        });
+      });
+    }
+
+    res.json(alertas);
+  } catch (error) {
+    console.error('Error generando alertas predictivas:', error);
+    res.status(500).json({ error: 'Error interno generando alertas' });
+  }
+});
+
+app.post('/api/ia/sugerir-cie10', authenticateToken, authorizeRoles('admin', 'medico'), async (req, res) => {
+  const { sintomas } = req.body;
+  if (!sintomas) return res.status(400).json({ error: 'Debes proporcionar los síntomas del paciente' });
+
+  try {
+    const groqApiKey = process.env.GROQ_API_KEY;
+    if (!groqApiKey) {
+      return res.status(500).json({ error: 'API Key de IA no configurada en el servidor' });
+    }
+
+    const axios = require('axios');
+    const systemPrompt = \`Eres un asistente médico de apoyo para el sistema SIVICO23 en Venezuela.
+Basándote en los síntomas descritos, sugiere los 3 códigos CIE-10 más probables.
+Responde estrictamente en formato JSON: { "sugerencias": [ { "codigo": "J18.9", "descripcion": "Neumonía, no especificada", "justificacion": "basado en fiebre y tos", "confianza": 85 } ] }
+NO diagnostiques. Solo sugiere para que el médico evalúe.\`;
+
+    const response = await axios.post('https://api.groq.com/openai/v1/chat/completions', {
+      model: 'llama-3.3-70b-versatile',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: \`Síntomas del paciente: \${sintomas}\` }
+      ],
+      response_format: { type: "json_object" }
+    }, {
+      headers: {
+        'Authorization': \`Bearer \${groqApiKey}\`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    const aiContent = response.data.choices[0].message.content;
+    const parsed = JSON.parse(aiContent);
+    res.json(parsed);
+  } catch (error) {
+    console.error('Error al contactar IA:', error.response?.data || error.message);
+    res.status(500).json({ error: 'Error del asistente de inteligencia artificial' });
+  }
+});
+
+// ============================================================
 // SERVIDOR
 // ============================================================
 
