@@ -2565,21 +2565,21 @@ app.post('/api/ia/sugerir-cie10', authenticateToken, authorizeRoles('admin', 'me
     }
 
     const axios = require('axios');
-    const systemPrompt = \`Eres un asistente médico de apoyo para el sistema SIVICO23 en Venezuela.
+    const systemPrompt = `Eres un asistente médico de apoyo para el sistema SIVICO23 en Venezuela.
 Basándote en los síntomas descritos, sugiere los 3 códigos CIE-10 más probables.
 Responde estrictamente en formato JSON: { "sugerencias": [ { "codigo": "J18.9", "descripcion": "Neumonía, no especificada", "justificacion": "basado en fiebre y tos", "confianza": 85 } ] }
-NO diagnostiques. Solo sugiere para que el médico evalúe.\`;
+NO diagnostiques. Solo sugiere para que el médico evalúe.`;
 
     const response = await axios.post('https://api.groq.com/openai/v1/chat/completions', {
       model: 'llama-3.3-70b-versatile',
       messages: [
         { role: 'system', content: systemPrompt },
-        { role: 'user', content: \`Síntomas del paciente: \${sintomas}\` }
+        { role: 'user', content: `Síntomas del paciente: ${sintomas}` }
       ],
       response_format: { type: "json_object" }
     }, {
       headers: {
-        'Authorization': \`Bearer \${groqApiKey}\`,
+        'Authorization': `Bearer ${groqApiKey}`,
         'Content-Type': 'application/json'
       }
     });
