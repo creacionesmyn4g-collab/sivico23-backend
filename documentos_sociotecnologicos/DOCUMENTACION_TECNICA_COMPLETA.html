@@ -46,7 +46,7 @@
         <p style="font-size: 1.2em; color: var(--text); margin: 0;">Sistema de Vigilancia Sociocomunitaria y Control de Salud</p>
         <p style="color: var(--text2); margin-top: 4px;">Parroquia 23 de Enero — Municipio Libertador — Caracas, Venezuela</p>
         <p style="margin-top: 16px;">
-            <span class="badge">Fase 2 Final</span>
+            <span class="badge">Fase 2 Final (IA Integrada)</span>
             <span class="badge badge-green">Arquitectura de 17 Tablas</span>
         </p>
         <p style="font-size: 0.85em; color: var(--text2); margin-top: 20px;">
@@ -61,6 +61,7 @@
             <li><a href="#s1">Descripción del Proyecto</a></li>
             <li><a href="#s3">Stack Tecnológico</a></li>
             <li><a href="#s4">Arquitectura del Sistema</a></li>
+            <li><a href="#s_ia">Motor de Inteligencia Artificial (Fase 2)</a></li>
             <li><a href="#s6">Modelo de Base de Datos (17 Tablas - 3FN)</a></li>
             <li><a href="#s7">Diccionario de Datos Completo</a></li>
             <li><a href="#s9">Sistema de Roles y Permisos</a></li>
@@ -80,16 +81,24 @@
     <!-- ===== 4. ARQUITECTURA ===== -->
     <h2 id="s4">2. Arquitectura del Sistema</h2>
     <pre>
-│     CAPA DE DATOS           │
-│  PostgreSQL 16              │
-│  17 TABLAS MAESTRAS         │
-│  Normalización: 3FN REAL    │
-│  Relaciones: FK + RESTRICT  │
+│     CAPA DE DATOS           │    │     INTELIGENCIA ARTIFICIAL │
+│  PostgreSQL 16              │    │  Groq API (Llama 3.3 70B)   │
+│  17 TABLAS MAESTRAS         │    │  Alertas Predictivas SQL    │
+│  Normalización: 3FN REAL    │    │  Asistente Clínico CIE-10   │
+│  Relaciones: FK + RESTRICT  │    └─────────────────────────────┘
 └─────────────────────────────┘
     </pre>
     <div class="success-box">
-        <strong>Alcance del documento:</strong> Esta documentación cubre todas las áreas del proyecto, incluyendo la estructura de datos, la seguridad, los roles, el módulo PAI de vacunación, el módulo de discapacidad, emergencias SOS, jornadas comunitarias, notificaciones de usuario y auditoría de pacientes.
+        <strong>Alcance del documento:</strong> Esta documentación cubre todas las áreas del proyecto, incluyendo la estructura de datos, la seguridad, la Inteligencia artificial de apoyo, el módulo PAI de vacunación, el módulo de discapacidad, emergencias SOS, jornadas comunitarias, notificaciones de usuario y auditoría de pacientes.
     </div>
+
+    <!-- ===== MOTOR IA ===== -->
+    <h2 id="s_ia">2.1. Motor de Inteligencia Artificial (NUEVO)</h2>
+    <p>En la Fase 2, SIVICO23 incorporó capacidades de Inteligencia Artificial en dos vertientes principales para asistir en la toma de decisiones:</p>
+    <ul>
+        <li><strong>Analítica Predictiva SQL (Backend):</strong> Algoritmos complejos que cruzan las fechas de registros, los sectores y las patologías. Se identifican automáticamente pacientes que superan los 30 días sin seguimiento médico y repuntes atípicos de morbilidad (>20% de incremento) en comunidades específicas, alertando al administrador en su Dashboard.</li>
+        <li><strong>Asistente Clínico Groq (Frontend):</strong> Integración con la API de Groq usando el modelo <code>llama-3.3-70b-versatile</code>. Los médicos introducen un texto plano con los síntomas del paciente y la IA analiza la semántica devolviendo los tres códigos CIE-10 más probables estandarizados en formato JSON. Esta recomendación es de apoyo directo durante la consulta (RegistroScreen).</li>
+    </ul>
 
     <!-- ===== 6. MODELO DE BASE DE DATOS ===== -->
     <h2 id="s6">3. Modelo de Base de Datos (17 Tablas)</h2>
@@ -324,8 +333,8 @@
             <ul>
                 <li><strong>Node.js & Express:</strong> Servidor de API REST bajo arquitectura MVC.</li>
                 <li><strong>PostgreSQL 16:</strong> Base de datos relacional robusta.</li>
-                <li><strong>PG-Pool:</strong> Gestión de conexiones concurrentes optimizada.</li>
-                <li><strong>Bcrypt:</strong> Encriptación de nivel bancario para credenciales.</li>
+                <li><strong>Groq SDK / Axios:</strong> Integración de modelos de procesamiento de lenguaje natural (Llama 3).</li>
+                <li><strong>PG-Pool & Bcrypt:</strong> Conexiones concurrentes y encriptación de seguridad bancaria.</li>
             </ul>
         </div>
     </div>

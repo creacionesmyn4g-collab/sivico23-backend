@@ -1,0 +1,113 @@
+@startuml
+title SIVICO23 - Diagrama de Clases (Backend)
+
+class Usuario {
+  +id: integer
+  +cedula: string
+  +nombre: string
+  +apellido: string
+  +email: string
+  +password_hash: string
+  +rol_id: integer
+  +sector_id: integer
+}
+
+class Rol {
+  +id: integer
+  +nombre: string
+  +descripcion: string
+}
+
+class Sector {
+  +id: integer
+  +nombre: string
+}
+
+class Paciente {
+  +id: integer
+  +cedula: string
+  +nombre: string
+  +apellido: string
+  +fecha_nacimiento: date
+  +sexo: string
+  +telefono: string
+  +sector_id: integer
+}
+
+class Registro {
+  +id: integer
+  +codigo: string
+  +paciente_id: integer
+  +usuario_id: integer
+  +fecha: datetime
+  +observaciones: text
+}
+
+class Tratamiento {
+  +id: integer
+  +registro_id: integer
+  +patologia_id: integer
+  +descripcion: text
+}
+
+class Medicamento {
+  +id: integer
+  +tratamiento_id: integer
+  +nombre: string
+  +presentacion: string
+  +dosis: string
+  +via: string
+}
+
+class PatologiaCIE10 {
+  +id: integer
+  +codigo: string
+  +nombre: string
+  +categoria_id: integer
+}
+
+class Discapacidad {
+  +id: integer
+  +nombre: string
+  +codigo: string
+}
+
+class PacienteDiscapacidad {
+  +paciente_id: integer
+  +discapacidad_id: integer
+  +posee_certificado_conapdis: boolean
+  +numero_certificado: string
+}
+
+class DeviceToken {
+  +id: integer
+  +usuario_id: integer
+  +token: string
+  +tipo: string
+}
+
+class CatVacunaMPPS {
+  +id: integer
+  +nombre: string
+  +edad_minima_meses: integer
+}
+
+Usuario "1" -- "*" Registro : crea
+Paciente "1" -- "*" Registro : tiene
+Registro "1" -- "*" Tratamiento : contiene
+Tratamiento "1" -- "*" Medicamento : prescribe
+Tratamiento "*" -- "1" PatologiaCIE10 : relacionada_con
+Usuario "*" -- "1" Rol : tiene
+Usuario "*" -- "1" Sector : pertenece_a
+Paciente "*" -- "1" Sector : pertenece_a
+Paciente "*" -- "*" Discapacidad : perfil
+PacienteDiscapacidad -- Paciente
+PacienteDiscapacidad -- Discapacidad
+Usuario "1" -- "*" DeviceToken : posee
+CatVacunaMPPS .. Paciente : "historia_vacunas"
+
+note right of Registro
+  Entidad central: registra atenciones
+end note
+
+@enduml

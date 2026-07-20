@@ -497,25 +497,42 @@ PORT=3001
 
 ## 📄 LICENCIA
 
-Proyecto Sociotecnológico - PNF Informática
+Este proyecto está bajo la licencia **Creative Commons Atribución-NoComercial 4.0 Internacional (CC BY-NC 4.0)**. Puedes ver los detalles completos en el archivo [LICENSE](LICENSE).
+
+**Esta licencia permite:**
+*   **Compartir:** Puedes copiar y redistribuir el material en cualquier medio o formato.
+*   **Adaptar:** Puedes remezclar, transformar y construir a partir del material para cualquier propósito no comercial.
+
+**Bajo los siguientes términos:**
+*   **Atribución:** Debe dar crédito de manera adecuada, brindar un enlace a la licencia e indicar si se han realizado cambios.
+*   **No Comercial:** No puede hacer uso del material con fines comerciales (venta o lucro por parte de terceros).
 
 ---
 
 ## 👥 AUTORES
 
-- Proyecto: SIVICO23 (Sistema de Vigilancia y Control Comunitario)
-- Comunidad: Eje Territorial Comunal
-- Institución: Universidad Politécnica Territorial "Andrés Eloy Blanco" (UPTAEB)
-- Año: 2026
+*   **Jesús Capo** – **Arquitectura de Software y Desarrollo Lead**
+    *   Diseño y ejecución del Backend (Node.js/Express) y Frontend (React Native).
+    *   Implementación de la Base de Datos (17 tablas en 3FN) y lógica de Sincronización.
+    *   Integración del motor de IA (Llama 3.3) y Alertas Predictivas.
+*   **Fernández Ana / Mariño Onelia** – **Investigación y Concepto Sociocomunitario**
+    *   Aporte de requerimientos funcionales e ideación de módulos.
+    *   Apoyo en el diagnóstico participativo y recolección de referentes 
+### Información del Proyecto
+    *   **Proyecto:** SIVICO23 (Sistema de Vigilancia y Control Comunitario)
+    *   **Comunidad:** Consejo Comunal "Reivindicación del 66" - Bloque 27, 23 de Enero
+*   **Misión Sucre** - Aldea Universitaria "El Panal"
+*   **Programa Nacional De Formación En Informática (PNFI)**
+*   **Año: 2026**
 
 ---
 
 ## 📧 CONTACTO
 
 Para soporte técnico o preguntas sobre el proyecto:
-- Email: sivico23@proyecto.ve
+- Email: jmcm1608@gmail.com
 - GitHub: github.com/sivico23
 
 ---
 
-**¡Sistema operativo y listo para graduación!** 🎓🇻🇪
+**¡Sistema operativo y listo !** 🎓🇻🇪

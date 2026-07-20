@@ -1,3 +1,32 @@
+/**
+ * ============================================================================
+ * 🏥 SIVICO23 - Sistema de Vigilancia y Control de Salud Comunitaria
+ * Eje Territorial Comunal - UPTAEB
+ * 
+ * © 2026 - Todos los derechos reservados.
+ * 
+ * Autores:
+ * - Jesús Capo – Arquitectura de Software y Desarrollo Lead
+ * - Fernández Ana / Mariño Onelia – Investigación y Concepto Sociocomunitario
+ * 
+ * Proyecto: SIVICO23
+ * Comunidad: Consejo Comunal "Reivindicación del 66" - Bloque 27, 23 de Enero
+ * Misión Sucre - Aldea Universitaria "El Panal"
+ * Programa Nacional De Formación En Informática (PNFI)
+ * Año: 2026
+ * 
+ * Licencia: Creative Commons Atribución-NoComercial 4.0 Internacional (CC BY-NC 4.0)
+ * 
+ * Esta licencia permite:
+ * - Compartir: Copiar y redistribuir el material en cualquier medio o formato.
+ * - Adaptar: Remezclar, transformar y construir a partir del material.
+ * 
+ * Bajo los siguientes términos:
+ * - Atribución: Debe dar crédito de manera adecuada y brindar enlace a la licencia.
+ * - No Comercial: No puede hacer uso del material con fines comerciales.
+ * ============================================================================
+ */
+
 // ============================================================
 // SIVICO23 FASE 2 — server.js — Backend Node.js + Express + PostgreSQL
 // API REST para sincronización de datos

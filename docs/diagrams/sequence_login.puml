@@ -1,0 +1,27 @@
+@startuml
+title SIVICO23 - Secuencia: Login de usuario
+
+actor Usuario
+participant LoginScreen
+participant AuthContext
+participant ApiService
+participant Backend
+database PostgreSQL
+
+Usuario -> LoginScreen : ingresa cédula + contraseña
+LoginScreen -> ApiService : login(cedula, password)
+ApiService -> Backend : POST /api/auth/login
+Backend -> PostgreSQL : SELECT usuario JOIN roles
+PostgreSQL --> Backend : usuario row
+Backend -> Backend : bcrypt.compare(password, password_hash)
+Backend -> Backend : jwt.sign(payload)
+Backend --> ApiService : { token, usuario }
+ApiService --> LoginScreen : resultado
+LoginScreen -> AuthContext : guardarToken + guardarUsuario (AsyncStorage)
+AuthContext -> Navigation : navegar a InicioScreen
+
+note right of Backend
+  Validación, rate-limit y logs de seguridad
+end note
+
+@enduml

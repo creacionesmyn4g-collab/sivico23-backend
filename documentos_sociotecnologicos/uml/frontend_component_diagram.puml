@@ -1,0 +1,33 @@
+@startuml
+title SIVICO23 - Diagrama de Componentes (Frontend)
+
+package "App" {
+  [App] --> [AuthContext]
+  [App] --> [Navigation]
+}
+
+[AuthContext] --> [LoginScreen]
+[AuthContext] --> [InicioScreen]
+[LoginScreen] --> [ApiService]
+[InicioScreen] --> [ApiService]
+
+[BuscarScreen] --> [ApiService]
+[DetalleRegistroScreen] --> [ApiService]
+
+component ApiService {
+  ApiService : login(), obtenerPacientes(), crearRegistro(), obtenerRegistros()
+}
+
+component LeafletMap
+component TarjetaVacunacion
+
+LoginScreen -down-> ApiService : POST /api/auth/login
+BuscarScreen -down-> ApiService : GET /api/pacientes
+DetalleRegistroScreen -down-> ApiService : GET /api/registros/:id
+
+note left of ApiService
+  Interfaz central para llamadas REST
+  Implementado en /frontend/src/services/apiService.js
+end note
+
+@enduml

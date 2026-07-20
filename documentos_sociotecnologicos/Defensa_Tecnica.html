@@ -170,8 +170,9 @@
                         <li><strong>jsonwebtoken</strong> — Emite y valida tokens JWT para autenticación.</li>
                         <li><strong>cors</strong> — Permite seguridad en el intercambio de datos entre app y servidor.</li>
                         <li><strong>helmet</strong> — Refuerza cabeceras HTTP contra ataques comunes.</li>
-                        <li><strong>express-rate-limit</strong> — Protege login y API contra abusos de solicitudes.
+                        <li><strong>express-rate-limit</strong> — Protege login y API contra abusos de solicitudes.</li>
                         <li><strong>joi</strong> — Valida datos de entrada en las rutas.</li>
+                        <li><strong>axios (backend)</strong> — Se usa en el servidor para realizar las llamadas HTTP a la API externa de Inteligencia Artificial (Groq).</li>
                     </ul>
                 </div>
             </div>
@@ -343,6 +344,14 @@ const styles = StyleSheet.create({
                 <div>
                     <h3>¿Qué es 3FN?</h3>
                     <p>La Tercera Forma Normal es una técnica para eliminar redundancias. En SIVICO23 se separan datos de pacientes, usuarios, sectores, patologías, vacunas y notificaciones en tablas diferentes.</p>
+                </div>
+                <div>
+                    <h3>¿Por qué integrar Inteligencia Artificial?</h3>
+                    <p>La IA (Groq Llama 3.3) actúa como un <strong>Asistente Clínico Inteligente</strong>. Convierte descripciones naturales de síntomas en diagnósticos oficiales propuestos, buscando y cruzando resultados entre más de <strong>7.700 patologías CIE-10</strong> en milisegundos. Además, el Dashboard incluye una función de <strong>Alertas Predictivas</strong> capaz de identificar anomalías y predecir brotes locales basados en la recolección masiva de datos y triajes.</p>
+                </div>
+                <div>
+                    <h3>¿Cómo se manejaron las +7.700 patologías (CIE-10)?</h3>
+                    <p>Se resolvió mediante un algoritmo de <strong>Lazy Loading (Carga Perezosa)</strong> y programación defensiva en la aplicación móvil de React Native. La base de datos envía solo la información necesaria (CIE-10 genéricos) y luego se extienden bajo demanda directamente desde Supabase sin colapsar la memoria RAM del teléfono.</p>
                 </div>
                 <div>
                     <h3>¿Qué archivos debe revisar el jurado?</h3>

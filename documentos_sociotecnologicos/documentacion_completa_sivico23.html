@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -153,9 +154,20 @@
             text-transform: uppercase;
         }
 
-        .badge-primary { background: var(--primary); color: white; }
-        .badge-accent { background: var(--accent); color: white; }
-        .badge-warning { background: var(--warning); color: black; }
+        .badge-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .badge-accent {
+            background: var(--accent);
+            color: white;
+        }
+
+        .badge-warning {
+            background: var(--warning);
+            color: black;
+        }
 
         .highlight {
             background: linear-gradient(135deg, var(--accent), #16A34A);
@@ -193,12 +205,21 @@
         }
 
         @media (max-width: 768px) {
-            .header h1 { font-size: 2em; }
-            .section { padding: 20px; }
-            .stats-grid { grid-template-columns: 1fr; }
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .section {
+                padding: 20px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <!-- Header -->
@@ -211,15 +232,23 @@
         <!-- Introducción -->
         <div class="section">
             <h2>¿Qué es SIVICO23?</h2>
-            <p>SIVICO23 es una aplicación móvil innovadora diseñada para la <strong>vigilancia epidemiológica comunitaria</strong> en la Parroquia 23 de Enero, Municipio Libertador, Caracas - Venezuela. Desarrollada como proyecto final de grado en Informática, esta plataforma integra tecnologías de vanguardia para gestionar la salud pública de manera eficiente y accesible.</p>
+            <p>SIVICO23 es una aplicación móvil innovadora diseñada para la <strong>vigilancia epidemiológica
+                    comunitaria</strong> en la Parroquia 23 de Enero, Municipio Libertador, Caracas - Venezuela.
+                Desarrollada como proyecto final de grado en Informática, esta plataforma integra tecnologías de
+                vanguardia para gestionar la salud pública de manera eficiente y accesible.</p>
 
             <div class="highlight">
                 <h3>Propósito Principal</h3>
-                <p>SIVICO23 facilita el registro, seguimiento y análisis de condiciones de salud en comunidades vulnerables, permitiendo una respuesta rápida y coordinada ante emergencias médicas, epidemias y necesidades de vacunación infantil.</p>
+                <p>SIVICO23 facilita el registro, seguimiento y análisis de condiciones de salud en comunidades
+                    vulnerables, permitiendo una respuesta rápida y coordinada ante emergencias médicas, epidemias y
+                    necesidades de vacunación infantil.</p>
             </div>
 
             <p style="margin-bottom: 20px; color: var(--text-secondary);">
-                La versión actual del proyecto incluye un catálogo frontend curado con <strong>50 patologías CIE-10</strong>, <strong>19 categorías médicas</strong> y <strong>138 medicamentos únicos</strong>. El backend soporta una base de datos CIE-10 completa con <strong>más de 7.000 diagnósticos</strong>. El sistema opera con <strong>3 roles activos</strong>: admin, médico y vocero/promotor.
+                La versión actual del proyecto incluye un catálogo frontend curado con <strong>50 patologías
+                    CIE-10</strong>, <strong>19 categorías médicas</strong> y <strong>138 medicamentos únicos</strong>.
+                El backend soporta una base de datos CIE-10 completa con <strong>más de 7.000 diagnósticos</strong>. El
+                sistema opera con <strong>3 roles activos</strong>: admin, médico y vocero/promotor.
             </p>
 
             <div class="stats-grid">
@@ -242,25 +271,33 @@
             </div>
         </div>
 
-        <!-- Arquitectura General -->
         <div class="section">
             <h2>Arquitectura del Sistema</h2>
-            <p>SIVICO23 combina un <strong>backend robusto en Node.js con PostgreSQL</strong> y un <strong>frontend móvil en React Native con Expo</strong>, ofreciendo sincronización offline-online y geolocalización avanzada.</p>
+            <p>SIVICO23 combina un <strong>backend robusto en Node.js con PostgreSQL</strong>, un <strong>frontend móvil
+                    en React Native con Expo</strong> y, en su nueva fase, un <strong>motor cognitivo de Inteligencia
+                    Artificial (Llama 3.3 vía Groq Cloud API)</strong>. Esto ofrece sincronización offline-online,
+                geolocalización avanzada y soporte predictivo.</p>
 
             <h3>Características Técnicas Destacadas</h3>
             <ul class="function-list">
                 <li><strong>Base de Datos Normalizada:</strong> Modelo ER en 3FN con 17 tablas maestras</li>
-                <li><strong>Autenticación JWT:</strong> Sistema seguro con 3 roles activos (Admin, Médico, Vocero/Promotor)</li>
-                <li><strong>Sincronización Inteligente:</strong> Registro local en modo offline con sincronización posterior</li>
+                <li><strong>Autenticación JWT:</strong> Sistema seguro con 3 roles activos (Admin, Médico,
+                    Vocero/Promotor)</li>
+                <li><strong>Asistente Clínico IA (NUEVO):</strong> Procesamiento de Lenguaje Natural para sugerencia
+                    automática de diagnósticos CIE-10 mediante descripciones de síntomas.</li>
+                <li><strong>Sincronización Inteligente:</strong> Registro local en modo offline con sincronización
+                    posterior</li>
                 <li><strong>Cartografía Interactiva:</strong> Mapas con GeoJSON y calor de densidad poblacional</li>
-                <li><strong>API REST Completa:</strong> 15 endpoints para gestión integral de datos</li>
+                <li><strong>Alertas Predictivas (NUEVO):</strong> Motor de analítica proactiva para detectar repuntes
+                    epidemiológicos tempranos en el Dashboard.</li>
             </ul>
         </div>
 
         <!-- Pantallas de la Aplicación -->
         <div class="section">
             <h2>Guía Completa de Pantallas</h2>
-            <p>A continuación, detallamos cada pantalla de la aplicación, sus funcionalidades y cómo utilizarlas de manera efectiva.</p>
+            <p>A continuación, detallamos cada pantalla de la aplicación, sus funcionalidades y cómo utilizarlas de
+                manera efectiva.</p>
 
             <!-- Login Screen -->
             <div class="screen-card">
@@ -276,14 +313,16 @@
                 </ul>
 
                 <div class="usage-guide">
-                    <strong>¿Cómo usar?</strong> Ingresa tu cédula en el formato correcto y tu contraseña. El sistema se conectará automáticamente, mostrando mensajes de progreso si el servidor necesita activarse.
+                    <strong>¿Cómo usar?</strong> Ingresa tu cédula en el formato correcto y tu contraseña. El sistema se
+                    conectará automáticamente, mostrando mensajes de progreso si el servidor necesita activarse.
                 </div>
             </div>
 
             <!-- Inicio Screen -->
             <div class="screen-card">
                 <div class="screen-title">🏠 Dashboard Principal (Inicio)</div>
-                <p><strong>Función:</strong> Panel de control principal con accesos rápidos y estadísticas generales del sistema.</p>
+                <p><strong>Función:</strong> Panel de control principal con accesos rápidos y estadísticas generales del
+                    sistema.</p>
 
                 <h4>Funcionalidades Principales:</h4>
                 <ul class="function-list">
@@ -295,14 +334,16 @@
                 </ul>
 
                 <div class="usage-guide">
-                    <strong>¿Cómo usar?</strong> Desde aquí puedes navegar a cualquier sección tocando los botones de acceso rápido, o revisar los últimos registros médicos realizados en el sistema.
+                    <strong>¿Cómo usar?</strong> Desde aquí puedes navegar a cualquier sección tocando los botones de
+                    acceso rápido, o revisar los últimos registros médicos realizados en el sistema.
                 </div>
             </div>
 
             <!-- Registro Screen -->
             <div class="screen-card">
                 <div class="screen-title">📝 Registro de Pacientes</div>
-                <p><strong>Función:</strong> Flujo guiado de 5 pasos para registrar nuevos pacientes y tratamientos médicos.</p>
+                <p><strong>Función:</strong> Flujo guiado de 5 pasos para registrar nuevos pacientes y tratamientos
+                    médicos.</p>
 
                 <h4>Funcionalidades Principales:</h4>
                 <ul class="function-list">
@@ -314,7 +355,9 @@
                 </ul>
 
                 <div class="usage-guide">
-                    <strong>¿Cómo usar?</strong> Sigue los pasos en orden: primero registra los datos del paciente, luego selecciona categorías médicas, elige patologías específicas, asigna medicamentos y finalmente confirma el registro.
+                    <strong>¿Cómo usar?</strong> Sigue los pasos en orden: primero registra los datos del paciente,
+                    luego selecciona categorías médicas, elige patologías específicas, asigna medicamentos y finalmente
+                    confirma el registro.
                 </div>
             </div>
 
@@ -332,7 +375,8 @@
                 </ul>
 
                 <div class="usage-guide">
-                    <strong>¿Cómo usar?</strong> Completa los datos del infante y su representante. El sistema calculará automáticamente la edad y te llevará al esquema de vacunación PAI.
+                    <strong>¿Cómo usar?</strong> Completa los datos del infante y su representante. El sistema calculará
+                    automáticamente la edad y te llevará al esquema de vacunación PAI.
                 </div>
             </div>
 
@@ -350,14 +394,16 @@
                 </ul>
 
                 <div class="usage-guide">
-                    <strong>¿Cómo usar?</strong> Busca al paciente por su cédula. Si está registrado, verás su tarjeta PAI. Si no, puedes registrar un nuevo infante desde aquí.
+                    <strong>¿Cómo usar?</strong> Busca al paciente por su cédula. Si está registrado, verás su tarjeta
+                    PAI. Si no, puedes registrar un nuevo infante desde aquí.
                 </div>
             </div>
 
             <!-- Buscar Screen -->
             <div class="screen-card">
                 <div class="screen-title">🔍 Búsqueda Avanzada</div>
-                <p><strong>Función:</strong> Búsqueda inteligente de pacientes y patologías en la base de datos médica.</p>
+                <p><strong>Función:</strong> Búsqueda inteligente de pacientes y patologías en la base de datos médica.
+                </p>
 
                 <h4>Funcionalidades Principales:</h4>
                 <ul class="function-list">
@@ -368,7 +414,8 @@
                 </ul>
 
                 <div class="usage-guide">
-                    <strong>¿Cómo usar?</strong> Escribe al menos 2 caracteres en el campo de búsqueda. Los resultados aparecerán automáticamente organizados en pestañas por tipo.
+                    <strong>¿Cómo usar?</strong> Escribe al menos 2 caracteres en el campo de búsqueda. Los resultados
+                    aparecerán automáticamente organizados en pestañas por tipo.
                 </div>
             </div>
 
@@ -386,7 +433,8 @@
                 </ul>
 
                 <div class="usage-guide">
-                    <strong>¿Cómo usar?</strong> Utiliza la búsqueda para encontrar registros específicos, o aplica filtros para ver solo urgencias o tus propios registros.
+                    <strong>¿Cómo usar?</strong> Utiliza la búsqueda para encontrar registros específicos, o aplica
+                    filtros para ver solo urgencias o tus propios registros.
                 </div>
             </div>
 
@@ -404,7 +452,8 @@
                 </ul>
 
                 <div class="usage-guide">
-                    <strong>¿Cómo usar?</strong> Desde aquí puedes revisar todo el historial médico, agregar nuevas consultas o exportar el expediente en PDF.
+                    <strong>¿Cómo usar?</strong> Desde aquí puedes revisar todo el historial médico, agregar nuevas
+                    consultas o exportar el expediente en PDF.
                 </div>
             </div>
 
@@ -422,7 +471,8 @@
                 </ul>
 
                 <div class="usage-guide">
-                    <strong>¿Cómo usar?</strong> Concede permisos de ubicación para ordenar por cercanía. Toca "Ver Mapa" para navegación o "Llamar" para contacto directo.
+                    <strong>¿Cómo usar?</strong> Concede permisos de ubicación para ordenar por cercanía. Toca "Ver
+                    Mapa" para navegación o "Llamar" para contacto directo.
                 </div>
             </div>
 
@@ -440,7 +490,8 @@
                 </ul>
 
                 <div class="usage-guide">
-                    <strong>¿Cómo usar?</strong> Configura tu contacto de emergencia primero. En caso de urgencia, activa SOS con confirmación de 30 segundos.
+                    <strong>¿Cómo usar?</strong> Configura tu contacto de emergencia primero. En caso de urgencia,
+                    activa SOS con confirmación de 30 segundos.
                 </div>
             </div>
 
@@ -458,7 +509,8 @@
                 </ul>
 
                 <div class="usage-guide">
-                    <strong>¿Cómo usar?</strong> Revisa las notificaciones tocándolas. Los administradores pueden crear jornadas desde el modal de programación.
+                    <strong>¿Cómo usar?</strong> Revisa las notificaciones tocándolas. Los administradores pueden crear
+                    jornadas desde el modal de programación.
                 </div>
             </div>
 
@@ -476,7 +528,8 @@
                 </ul>
 
                 <div class="usage-guide">
-                    <strong>¿Cómo usar?</strong> Completa el formulario con los datos del nuevo usuario, selecciona su rol y sector, luego confirma el registro.
+                    <strong>¿Cómo usar?</strong> Completa el formulario con los datos del nuevo usuario, selecciona su
+                    rol y sector, luego confirma el registro.
                 </div>
             </div>
 
@@ -494,7 +547,8 @@
                 </ul>
 
                 <div class="usage-guide">
-                    <strong>¿Cómo usar?</strong> Revisa todos los detalles del registro. Usa el botón compartir para enviar información médica por WhatsApp.
+                    <strong>¿Cómo usar?</strong> Revisa todos los detalles del registro. Usa el botón compartir para
+                    enviar información médica por WhatsApp.
                 </div>
             </div>
         </div>
@@ -502,11 +556,14 @@
         <!-- Dashboard Analytics - Sección Especial -->
         <div class="section">
             <h2>📊 Dashboard Analítico - Centro de Inteligencia Epidemiológica</h2>
-            <p>El Dashboard es el corazón analítico de SIVICO23, proporcionando insights en tiempo real sobre la salud comunitaria con múltiples perspectivas de datos.</p>
+            <p>El Dashboard es el corazón analítico de SIVICO23, proporcionando insights en tiempo real sobre la salud
+                comunitaria con múltiples perspectivas de datos.</p>
 
             <div class="highlight">
                 <h3>¿Para qué sirve el Dashboard?</h3>
-                <p>Permite a los profesionales de salud tomar decisiones informadas basadas en datos epidemiológicos, identificar tendencias, detectar brechas en tratamientos y coordinar respuestas comunitarias efectivas.</p>
+                <p>Permite a los profesionales de salud tomar decisiones informadas basadas en datos epidemiológicos,
+                    identificar tendencias, detectar brechas en tratamientos y coordinar respuestas comunitarias
+                    efectivas.</p>
             </div>
 
             <h3>Filtros Temporales Disponibles</h3>
@@ -552,61 +609,75 @@
             <div class="screen-card">
                 <div class="screen-title">🩺 Diagnósticos (Patologías)</div>
                 <p><strong>Datos mostrados:</strong> Ranking de patologías más comunes con porcentajes y totales.</p>
-                <p><strong>Para qué sirve:</strong> Identificar las enfermedades más prevalentes en la comunidad para priorizar recursos médicos y programas preventivos.</p>
+                <p><strong>Para qué sirve:</strong> Identificar las enfermedades más prevalentes en la comunidad para
+                    priorizar recursos médicos y programas preventivos.</p>
             </div>
 
             <div class="screen-card">
                 <div class="screen-title">💊 Farmacia (Medicamentos)</div>
                 <p><strong>Datos mostrados:</strong> Medicamentos más prescritos con frecuencias de uso.</p>
-                <p><strong>Para qué sirve:</strong> Gestionar inventarios farmacéuticos, detectar brechas en tratamientos y optimizar compras de medicamentos.</p>
+                <p><strong>Para qué sirve:</strong> Gestionar inventarios farmacéuticos, detectar brechas en
+                    tratamientos y optimizar compras de medicamentos.</p>
             </div>
 
             <div class="screen-card">
                 <div class="screen-title">👥 Distribución por Edad</div>
                 <p><strong>Datos mostrados:</strong> Pacientes agrupados en rangos etarios con gráficos circulares.</p>
-                <p><strong>Para qué sirve:</strong> Adaptar programas de salud a grupos etarios específicos, como vacunación infantil o cuidado geriátrico.</p>
+                <p><strong>Para qué sirve:</strong> Adaptar programas de salud a grupos etarios específicos, como
+                    vacunación infantil o cuidado geriátrico.</p>
             </div>
 
             <div class="screen-card">
                 <div class="screen-title">📊 Por Patología Específica</div>
-                <p><strong>Datos mostrados:</strong> Análisis detallado de una patología seleccionada vs. población general.</p>
-                <p><strong>Para qué sirve:</strong> Estudios específicos de enfermedades, evaluación de impacto comunitario y seguimiento de tratamientos.</p>
+                <p><strong>Datos mostrados:</strong> Análisis detallado de una patología seleccionada vs. población
+                    general.</p>
+                <p><strong>Para qué sirve:</strong> Estudios específicos de enfermedades, evaluación de impacto
+                    comunitario y seguimiento de tratamientos.</p>
             </div>
 
             <div class="screen-card">
                 <div class="screen-title">🗺️ Análisis por Sector Geográfico</div>
-                <p><strong>Datos mostrados:</strong> Estadísticas por cada sector de la parroquia con mapa interactivo.</p>
-                <p><strong>Para qué sirve:</strong> Identificar zonas de mayor riesgo epidemiológico, optimizar distribución de recursos y planificar intervenciones localizadas.</p>
+                <p><strong>Datos mostrados:</strong> Estadísticas por cada sector de la parroquia con mapa interactivo.
+                </p>
+                <p><strong>Para qué sirve:</strong> Identificar zonas de mayor riesgo epidemiológico, optimizar
+                    distribución de recursos y planificar intervenciones localizadas.</p>
             </div>
 
             <div class="screen-card">
                 <div class="screen-title">🩺 Triaje Médico</div>
-                <p><strong>Datos mostrados:</strong> Distribución de casos por niveles de urgencia (Alta, Media, Estándar).</p>
-                <p><strong>Para qué sirve:</strong> Gestionar cargas de trabajo en centros de salud y priorizar atenciones médicas críticas.</p>
+                <p><strong>Datos mostrados:</strong> Distribución de casos por niveles de urgencia (Alta, Media,
+                    Estándar).</p>
+                <p><strong>Para qué sirve:</strong> Gestionar cargas de trabajo en centros de salud y priorizar
+                    atenciones médicas críticas.</p>
             </div>
 
             <div class="screen-card">
                 <div class="screen-title">⚠️ Necesidad Real (Brechas)</div>
-                <p><strong>Datos mostrados:</strong> Medicamentos requeridos vs. disponibles, con ranking de brechas.</p>
-                <p><strong>Para qué sirve:</strong> Identificar faltantes críticos en tratamientos, gestionar donaciones y coordinar adquisiciones urgentes.</p>
+                <p><strong>Datos mostrados:</strong> Medicamentos requeridos vs. disponibles, con ranking de brechas.
+                </p>
+                <p><strong>Para qué sirve:</strong> Identificar faltantes críticos en tratamientos, gestionar donaciones
+                    y coordinar adquisiciones urgentes.</p>
             </div>
 
             <div class="screen-card">
                 <div class="screen-title">💉 Vacunación PAI</div>
                 <p><strong>Datos mostrados:</strong> Cobertura vacunal por edad, dosis aplicadas vs. programadas.</p>
-                <p><strong>Para qué sirve:</strong> Monitorear cumplimiento del esquema nacional de vacunación infantil y detectar niños con esquemas incompletos.</p>
+                <p><strong>Para qué sirve:</strong> Monitorear cumplimiento del esquema nacional de vacunación infantil
+                    y detectar niños con esquemas incompletos.</p>
             </div>
 
             <div class="screen-card">
                 <div class="screen-title">♿ Estadísticas de Discapacidad</div>
                 <p><strong>Datos mostrados:</strong> Tipos de discapacidad registrados, certificaciones CONAPDIS.</p>
-                <p><strong>Para qué sirve:</strong> Gestionar programas de inclusión, coordinar servicios especializados y cumplir con normativas legales.</p>
+                <p><strong>Para qué sirve:</strong> Gestionar programas de inclusión, coordinar servicios especializados
+                    y cumplir con normativas legales.</p>
             </div>
 
             <div class="screen-card">
                 <div class="screen-title">📍 Mapa de Calor Epidemiológico</div>
                 <p><strong>Datos mostrados:</strong> Densidad de casos por zona geográfica con colores intensivos.</p>
-                <p><strong>Para qué sirve:</strong> Visualizar patrones espaciales de enfermedades, detectar clusters epidemiológicos y planificar intervenciones territoriales.</p>
+                <p><strong>Para qué sirve:</strong> Visualizar patrones espaciales de enfermedades, detectar clusters
+                    epidemiológicos y planificar intervenciones territoriales.</p>
             </div>
 
             <h3>Estadísticas Generales del Dashboard</h3>
@@ -631,9 +702,12 @@
 
             <h3>Herramientas Avanzadas del Dashboard</h3>
             <ul class="function-list">
-                <li><strong>Exportación PDF/WhatsApp:</strong> Genera reportes profesionales para compartir con autoridades sanitarias</li>
-                <li><strong>Gestión de Brechas:</strong> Fusiona medicamentos duplicados y añade nuevos al catálogo oficial</li>
-                <li><strong>Monitor SOS:</strong> Gestiona emergencias activas con ubicación GPS y resolución en tiempo real</li>
+                <li><strong>Exportación PDF/WhatsApp:</strong> Genera reportes profesionales para compartir con
+                    autoridades sanitarias</li>
+                <li><strong>Gestión de Brechas:</strong> Fusiona medicamentos duplicados y añade nuevos al catálogo
+                    oficial</li>
+                <li><strong>Monitor SOS:</strong> Gestiona emergencias activas con ubicación GPS y resolución en tiempo
+                    real</li>
                 <li><strong>Sincronización:</strong> Actualiza datos offline-online para trabajo en campo</li>
             </ul>
         </div>
@@ -641,7 +715,8 @@
         <!-- Conclusión -->
         <div class="section">
             <h2>🚀 Beneficios y Valor de SIVICO23</h2>
-            <p>SIVICO23 representa una solución integral para la salud comunitaria, combinando tecnología móvil avanzada con análisis epidemiológico inteligente.</p>
+            <p>SIVICO23 representa una solución integral para la salud comunitaria, combinando tecnología móvil avanzada
+                con análisis epidemiológico inteligente.</p>
 
             <div class="stats-grid">
                 <div class="stat-card">
@@ -664,17 +739,21 @@
 
             <div class="highlight">
                 <h3>Impacto Comunitario</h3>
-                <p>SIVICO23 no solo digitaliza procesos médicos, sino que empodera a comunidades vulnerables con herramientas para una mejor salud pública, prevención de enfermedades y respuesta coordinada ante emergencias.</p>
+                <p>SIVICO23 no solo digitaliza procesos médicos, sino que empodera a comunidades vulnerables con
+                    herramientas para una mejor salud pública, prevención de enfermedades y respuesta coordinada ante
+                    emergencias.</p>
             </div>
         </div>
 
         <!-- Footer -->
         <div style="text-align: center; margin-top: 40px; padding: 20px; color: var(--text-secondary);">
-            <p>Proyecto de Grado TSU en Informática — Universidad Nacional Experimental de las Fuerzas Armadas (UNEFA)</p>
+            <p>Proyecto de Grado TSU en Informática</p>
             <p>Desarrollado con ❤️ para la Parroquia 23 de Enero, Caracas - Venezuela</p>
             <p style="margin-top: 10px; font-size: 0.9em;">Versión 3.1 - Marzo 2026</p>
         </div>
     </div>
 </body>
-</html></content>
+
+</html>
+</content>
 <parameter name="filePath">c:\Users\Windows 10 Pro\Desktop\SIVICO23_FASE2_FINAL\documentacion_completa_sivico23.html
