@@ -427,7 +427,20 @@ const insertarPacienteRegistroCompleto = async (client, usuario_id, data) => {
     let cie10 = t.patologia?.cie10 || t.cie10 || (typeof t.patologia === 'string' ? t.patologia : 'Z00.0');
     if (cie10.length > 10) cie10 = 'Z00.0';
 
-    const resP = await client.query('SELECT id FROM patologias_cie10 WHERE codigo = $1', [cie10]);
+    let resP = await client.query('SELECT id FROM patologias_cie10 WHERE codigo = $1', [cie10]);
+    if (resP.rows.length === 0) {
+      console.warn(`[IA-UPSERT] Código CIE-10 no encontrado en BD: ${cie10}. Insertado automáticamente.`);
+      const nombrePatologia = t.patologia?.nombre || t.patologia?.descripcion || `Patología ${cie10}`;
+      const catRes = await client.query("SELECT id FROM categorias_cie10 WHERE nombre = 'Generales' LIMIT 1");
+      const categoria_id = catRes.rows[0]?.id || null;
+      resP = await client.query(
+        `INSERT INTO patologias_cie10 (codigo, nombre, categoria_id)
+         VALUES ($1, $2, $3)
+         ON CONFLICT (codigo) DO UPDATE SET nombre = EXCLUDED.nombre
+         RETURNING id`,
+        [cie10, nombrePatologia, categoria_id]
+      );
+    }
     const patologia_id = resP.rows[0]?.id || 4;
 
     const tIns = await client.query(
@@ -1336,8 +1349,20 @@ app.post('/api/registros/:id/tratamientos',
         patCie10 = 'Z00.0';
       }
 
-      // Buscar patologia_id por codigo (Actualizado 3FN)
-      const resP = await client.query('SELECT id FROM patologias_cie10 WHERE codigo = $1', [patCie10]);
+      // Buscar patologia_id por codigo (Actualizado 3FN) con UPSERT de IA
+      let resP = await client.query('SELECT id FROM patologias_cie10 WHERE codigo = $1', [patCie10]);
+      if (resP.rows.length === 0) {
+        console.warn(`[IA-UPSERT] Código CIE-10 no encontrado en BD: ${patCie10}. Insertado automáticamente.`);
+        const catRes = await client.query("SELECT id FROM categorias_cie10 WHERE nombre = 'Generales' LIMIT 1");
+        const categoria_id = catRes.rows[0]?.id || null;
+        resP = await client.query(
+          `INSERT INTO patologias_cie10 (codigo, nombre, categoria_id)
+           VALUES ($1, $2, $3)
+           ON CONFLICT (codigo) DO UPDATE SET nombre = EXCLUDED.nombre
+           RETURNING id`,
+          [patCie10, patNombre, categoria_id]
+        );
+      }
       const patologia_id = resP.rows[0]?.id || 4; // Default Z00.0
 
       const trat = await client.query(
@@ -2029,8 +2054,21 @@ app.post('/api/sync', authenticateToken, authorizeRoles('admin', 'medico', 'voce
           let cie10 = t.patologia?.cie10 || t.cie10 || (typeof t.patologia === 'string' ? t.patologia : 'Z00.0');
           if (cie10.length > 10) cie10 = 'Z00.0';
 
-          // Buscar patologia_id
-          const resP = await client.query('SELECT id FROM patologias_cie10 WHERE codigo = $1', [cie10]);
+          // Buscar patologia_id con UPSERT de IA
+          let resP = await client.query('SELECT id FROM patologias_cie10 WHERE codigo = $1', [cie10]);
+          if (resP.rows.length === 0) {
+            console.warn(`[IA-UPSERT] Código CIE-10 no encontrado en BD: ${cie10}. Insertado automáticamente (Sync).`);
+            const nombrePatologia = t.patologia?.nombre || t.patologia?.descripcion || `Patología ${cie10}`;
+            const catRes = await client.query("SELECT id FROM categorias_cie10 WHERE nombre = 'Generales' LIMIT 1");
+            const categoria_id = catRes.rows[0]?.id || null;
+            resP = await client.query(
+              `INSERT INTO patologias_cie10 (codigo, nombre, categoria_id)
+               VALUES ($1, $2, $3)
+               ON CONFLICT (codigo) DO UPDATE SET nombre = EXCLUDED.nombre
+               RETURNING id`,
+              [cie10, nombrePatologia, categoria_id]
+            );
+          }
           const patologia_id = resP.rows[0]?.id || 4; // Default Z00.0
 
           const tIns = await client.query(
@@ -2611,8 +2649,8 @@ app.post('/api/ia/sugerir-cie10', authenticateToken, authorizeRoles('admin', 'me
   if (!sintomas) return res.status(400).json({ error: 'Debes proporcionar los síntomas del paciente' });
 
   try {
-    const groqApiKey = process.env.GROQ_API_KEY;
-    if (!groqApiKey) {
+    const iaApiKey = process.env.OPENROUTER_API_KEY || process.env.GROQ_API_KEY;
+    if (!iaApiKey) {
       return res.status(500).json({ error: 'API Key de IA no configurada en el servidor' });
     }
 
@@ -2622,19 +2660,32 @@ Basándote en los síntomas descritos, sugiere los 3 códigos CIE-10 más probab
 Responde estrictamente en formato JSON: { "sugerencias": [ { "codigo": "J18.9", "descripcion": "Neumonía, no especificada", "justificacion": "basado en fiebre y tos", "confianza": 85 } ] }
 NO diagnostiques. Solo sugiere para que el médico evalúe.`;
 
-    const response = await axios.post('https://api.groq.com/openai/v1/chat/completions', {
-      model: 'llama-3.3-70b-versatile',
+    // Determinar proveedor: OpenRouter (preferido) o Groq (fallback)
+    const useOpenRouter = !!process.env.OPENROUTER_API_KEY;
+    const apiUrl = useOpenRouter
+      ? 'https://openrouter.ai/api/v1/chat/completions'
+      : 'https://api.groq.com/openai/v1/chat/completions';
+    const modelName = useOpenRouter
+      ? 'meta-llama/llama-3.3-70b-instruct'
+      : 'llama-3.3-70b-versatile';
+
+    const headers = {
+      'Authorization': `Bearer ${iaApiKey}`,
+      'Content-Type': 'application/json'
+    };
+    if (useOpenRouter) {
+      headers['HTTP-Referer'] = 'https://sivico23.ve';
+      headers['X-Title'] = 'SIVICO23';
+    }
+
+    const response = await axios.post(apiUrl, {
+      model: modelName,
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: `Síntomas del paciente: ${sintomas}` }
       ],
       response_format: { type: "json_object" }
-    }, {
-      headers: {
-        'Authorization': `Bearer ${groqApiKey}`,
-        'Content-Type': 'application/json'
-      }
-    });
+    }, { headers });
 
     const aiContent = response.data.choices[0].message.content;
     const parsed = JSON.parse(aiContent);
