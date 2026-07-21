@@ -512,9 +512,27 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', time: new Date().toISOString() });
 });
 
-// GET /api/health — Endpoint público de salud para Railway/Monitoreo
-app.get('/api/health', (req, res) => {
-  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString(), service: 'SIVICO23 Backend' });
+// GET /api/diagnostico — Diagnóstico de conexión a BD (TEMPORAL)
+app.get('/api/diagnostico', async (req, res) => {
+  const info = {
+    node_env: process.env.NODE_ENV,
+    has_database_url: !!process.env.DATABASE_URL,
+    database_url_preview: process.env.DATABASE_URL ? process.env.DATABASE_URL.substring(0, 30) + '...' : 'NO DEFINIDA',
+    has_jwt_secret: !!process.env.JWT_SECRET,
+    has_groq_key: !!process.env.GROQ_API_KEY,
+  };
+  try {
+    const dbTest = await pool.query('SELECT NOW() as time, current_database() as db');
+    info.db_connected = true;
+    info.db_time = dbTest.rows[0].time;
+    info.db_name = dbTest.rows[0].db;
+    const userCount = await pool.query('SELECT count(*) as total FROM usuarios');
+    info.total_usuarios = userCount.rows[0].total;
+  } catch (dbErr) {
+    info.db_connected = false;
+    info.db_error = dbErr.message;
+  }
+  res.json(info);
 });
 
 // ============================================================
